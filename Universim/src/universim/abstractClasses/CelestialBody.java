@@ -9,7 +9,7 @@ public abstract class CelestialBody extends Body{
 	protected double rR;			//Radius Reference
 	protected double mR;			//Mass Reference
 	
-	public CelestialBody(int x, int y, double size, double mass) {
+	public CelestialBody(double x, double y, double size, double mass) {
 		super(x, y);
 		this.size = size;
 		this.mass = mass;

@@ -18,7 +18,11 @@ public abstract class SubTrabant extends CelestialBody{
 	protected double temperature;	//In Kelvin
 	
 	protected double orbitRadius;	//In AU
+	protected double currDist;		//Current distance from parenTrabant in meter
 	protected double speed;			//Frequency of orbits - orbits per day
+	protected double speedMS;		//Speed in m/s
+	protected double speedMSX;		//Speed in x-axis
+	protected double speedMSY;		//Speed in y-axis
 	protected double speedDeg;		//Change in orbit - degree/day
 	protected double deg;			//Current degree of orbit to starting position
 	protected int period;			//Orbital period - day/orbit - rounded for practical reasons
@@ -35,68 +39,122 @@ public abstract class SubTrabant extends CelestialBody{
 			parentStar = parentTrabant.getParentStar();
 		}
 		
-		oRR = 384399000;					//Orbit Radius Reference - Distance Earth Moon
-		rR = 1737400;						//Radius Reference - Moon Radius
-		mR = 7.342 * Math.pow(10, 22);		//Mass Reference - Moon Mass
+		oRR = Maths.EM;							//Orbit Radius Reference - Distance Earth Moon
+		rR = Maths.MR;							//Radius Reference - Moon Radius
+		mR = 7.342 * Math.pow(10, 22);			//Mass Reference - Moon Mass
 	}
 	
-	public void setXY() {		
-		int ranDeg = (int)(Math.random()*360);
-		double tempX = orbitRadius * Maths.pixelPerEM;
-//		System.out.println("PPEM: " + Maths.pixelPerEM);
-		double tempY = 0;
-		
-		relSX = tempX*Math.cos(ranDeg) - tempY*Math.sin(ranDeg);
-		relSY = tempX*Math.sin(ranDeg) + tempY*Math.cos(ranDeg);
-		relX = relSX;
-		relY = relSY;
-		
-		if(parentTrabant!=null) {
-			x = (int)relX + parentTrabant.getX();
-			y = (int)relY + parentTrabant.getY();
-		}
+//	public void setXY() {		
+//		int ranDeg = (int)(Math.random()*360);
+//		double tempX = orbitRadius * Maths.pixelPerLY * Maths.refMR;
+////		System.out.println("PPEM: " + Maths.pixelPerEM);
+//		double tempY = 0;
+//		
+//		relSX = tempX*Math.cos(ranDeg) - tempY*Math.sin(ranDeg);
+//		relSY = tempX*Math.sin(ranDeg) + tempY*Math.cos(ranDeg);
+//		relX = relSX;
+//		relY = relSY;
+//		
+//		if(parentTrabant!=null) {
+//			x = (int)relX + parentTrabant.getX();
+//			y = (int)relY + parentTrabant.getY();
+//		}
+//	}
+	
+	public void setXY() {
+		x = parentTrabant.getX() + (orbitRadius * oRR / Maths.lightyear);
+		y = parentTrabant.getY();		
+		currDist = orbitRadius * oRR;
 	}
 	
 	public void calculateSpeed() {
-//		System.out.println("Calculate Speed");
+		//Calculate speed of perfectly round orbit at this radius
 		if(parentTrabant==null)
 			return;
-//		System.out.println("parentMass: " + parentStar.getMass());
-//		System.out.println("orbitRadius: " + orbitRadius);
 		double parentMassKg = parentTrabant.getMass();
 		double orbitRadiusM = orbitRadius * oRR;
-		double G = 6.67430 * Math.pow(10, -11);
-//		System.out.println("G: " + G);
-		double speedMS = Math.sqrt(G*parentMassKg/orbitRadiusM);		//Speed int m/s
+		speedMS = Math.sqrt(Maths.G*parentMassKg/orbitRadiusM);			//Speed int m/s
+		speedMS *= 0.95;
 		double orbitLength = 2 * Math.PI * orbitRadiusM;
-//		System.out.println("speed: " + speedMS + "m/s");
-//		System.out.println("orbitLength: " + orbitLength + "m");
 		speed = speedMS/orbitLength * 86400;							//orbits/s * second per day
-		speedDeg = 360*speed;
 		period = (int)(1/speed);
-//		System.out.println("Period: " + period + ", Speed: " + speed + ", SpeedDeg: " + speedDeg);
+		speedMSX = 0;
+		speedMSY = speedMS;
 	}
 	
 	@Override
 	public void update(GameDisplay gameDisplay) {
-		deg += speedDeg/24;				//Divided by 24 for hourly updates
-		if(deg>=360)
-			deg -= 360;
-		double degRad = deg / 180 * Math.PI;
+		x = x + (speedMSX + parentTrabant.speedMSX) * Maths.secondsPerTick / Maths.lightyear;
+		y = y + (speedMSY + parentTrabant.speedMSY) * Maths.secondsPerTick / Maths.lightyear;
 		
-		relX = relSX*Math.cos(degRad) - relSY*Math.sin(degRad);
-		relY = relSX*Math.sin(degRad) + relSY*Math.cos(degRad);
+		double relX = (x - parentTrabant.getX()) * Maths.lightyear;
+		double relY = (y - parentTrabant.getY()) * Maths.lightyear;
+		currDist = Math.sqrt(relX * relX + relY * relY);
+		double totAcc = Maths.G * parentTrabant.getMass() / (currDist * currDist);		//Gravitational pull of parentTrabant
+		double xAcc, yAcc;
+		if(relY==0&&relX==0) {
+			System.out.println("Collision");
+			return;
+		}
+		else if(relY==0) {
+			xAcc = totAcc;
+			yAcc = 0;
+		}
+		else if(relX==0) {
+			xAcc = 0;
+			yAcc = totAcc;
+		}
+		else {
+			xAcc = Math.sqrt(totAcc*totAcc*relX*relX/(relY*relY+relX*relX));
+			yAcc = Math.sqrt(totAcc*totAcc-(xAcc*xAcc));
+		}
 		
-		x = (int)(relX * gameDisplay.getScale()) + parentTrabant.getX();
-		y = (int)(relY * gameDisplay.getScale()) + parentTrabant.getY();
+		if(Double.isNaN(xAcc)||Double.isNaN(yAcc)) {
+			System.out.println("NaN");
+			System.out.printf("relX: %f, relY: %f, currDist: %f, totAcc: %f, xAcc: %f, yAcc: %f, yAcc: %f\n", relX, relY, currDist, totAcc, xAcc, yAcc, totAcc*totAcc-(xAcc*xAcc));
+			throw new IllegalStateException();
+		}
+		
+		
+		if(relX>0) {
+			if(relY>0) {
+				//Bottom right quadrant
+				xAcc = -xAcc;
+				yAcc = -yAcc;
+			}
+			else {
+				//Top right quadrant
+				xAcc = -xAcc;
+			}
+		}
+		else {
+			if(relY>0) {
+				//Bottom left quadrant
+				yAcc = -yAcc;
+			}
+			else {
+				//Top left quadrant
+			}
+		}
+		
+		speedMSX += xAcc * Maths.secondsPerTick;		//Hourly updates
+		speedMSY += yAcc * Maths.secondsPerTick;
+		speed = Math.sqrt(speedMSX*speedMSX+speedMSY*speedMSY);
 	}
 	
-	public void detPos(GameDisplay gameDisplay) {
-		if(parentTrabant==null)
-			return;
-		x = (int)(relX * gameDisplay.getScale()) + parentTrabant.getX();
-		y = (int)(relY * gameDisplay.getScale()) + parentTrabant.getY();
-	}
+//	@Override
+//	public void update(GameDisplay gameDisplay) {
+//		deg += speedDeg/24;				//Divided by 24 for hourly updates
+//		if(deg>=360)
+//			deg -= 360;
+//		double degRad = deg / 180 * Math.PI;
+//		
+//		relX = relSX*Math.cos(degRad) - relSY*Math.sin(degRad);
+//		relY = relSX*Math.sin(degRad) + relSY*Math.cos(degRad);
+//		
+//		x = (int)(relX * gameDisplay.getScale()) + parentTrabant.getX();
+//		y = (int)(relY * gameDisplay.getScale()) + parentTrabant.getY();
+//	}
 	
 	public Star getParentStar() {
 		return parentStar;

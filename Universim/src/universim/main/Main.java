@@ -2,6 +2,7 @@ package universim.main;
 
 import universim.abstractClasses.*;
 import universim.generalClasses.Date;
+import universim.generalClasses.Maths;
 import universim.ui.Renderer;
 
 public class Main implements Runnable{
@@ -17,6 +18,8 @@ public class Main implements Runnable{
 	protected int height;
 	protected int hour;
 	protected Data data;
+	
+//	TODO Fix jittering
 	
 	public Main() {
 		framerate = 480;
@@ -64,26 +67,26 @@ public class Main implements Runnable{
 	        if(!paused) {
 	        	switch(getGameSpeed()) {
 	        	case 1:
-	        		if(lastGameUpdate+(1000000000)/24<=now) {
+	        		if(lastGameUpdate+(1000000000)/24/Maths.secondsPerTick<=now) {
 	        			updateGame(delta);
 	        			lastGameUpdate = now;
 	        		}
 	        		
 	        		break;
 	        	case 2:
-	        		if(lastGameUpdate+(500000000)/24<=now) {
+	        		if(lastGameUpdate+(500000000)/24/Maths.secondsPerTick<=now) {
 	        			updateGame(delta);
 	        			lastGameUpdate = now;
 	        		}
 	        		break;
 	        	case 3:
-	        		if(lastGameUpdate+(250000000)/24<=now) {
+	        		if(lastGameUpdate+(250000000)/24/Maths.secondsPerTick<=now) {
 	        			updateGame(delta);
 	        			lastGameUpdate = now;
 	        		}
 	        		break;
 	        	case 4:
-	        		if(lastGameUpdate+(125000000)/24<=now) {
+	        		if(lastGameUpdate+(125000000)/24/Maths.secondsPerTick<=now) {
 	        			updateGame(delta);
 	        			lastGameUpdate = now;
 	        		}
@@ -111,7 +114,25 @@ public class Main implements Runnable{
 	}
 	
 	public void updateGame(double delta) {
-		if(hour==24) {
+		if(hour==24*60) {
+			date.nextDay();
+			hour = 0;
+		}
+		else {
+			hour++;
+		}
+		for(Star i: getData().getStars()) {
+			for(Trabant j: i.getTrabants()) {
+				j.update(renderer.getGameDisplay());
+				for(SubTrabant k: j.getSubTrabants()) {
+					k.update(renderer.getGameDisplay());
+				}
+			}
+		}
+	}
+	
+	public void tick() {
+		if(hour==24*60) {
 			date.nextDay();
 			hour = 0;
 		}

@@ -10,6 +10,7 @@ import java.util.Scanner;
 import java.awt.Color;
 
 import universim.abstractClasses.Star;
+import universim.generalClasses.Maths;
 import universim.moonClasses.BarrenMoon;
 import universim.planetClasses.EarthLike;
 import universim.starClasses.ClassGStar;
@@ -139,17 +140,18 @@ public class Data {
 		stars.get(0).getTrabants().get(0).addSubTrabant(new BarrenMoon(0.1, 0.05, 0.3, false));
 		
 		stars.get(0).addTrabant(new EarthLike(1, 1, 1, false));
-		stars.get(0).getTrabants().get(1).addSubTrabant(new BarrenMoon(1, 1, 1, false));
+//		stars.get(0).getTrabants().get(1).addSubTrabant(new BarrenMoon(1, 1, 1, false));
+//		
+//		stars.get(0).addTrabant(new EarthLike(6, 16, 2.5, false));
+//		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(0.9, 0.3, 1.5, false));
+//		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(1.5, 0.8, 3, false));
+//		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(2.6, 1.6, 6, false));
 		
-		stars.get(0).addTrabant(new EarthLike(6, 16, 2.5, false));
-		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(0.9, 0.3, 1.5, false));
-		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(1.5, 0.8, 3, false));
-		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(2.6, 1.6, 6, false));
-		
-		
+		//Set colour of each star
 		for(Star i: stars) {
 			i.setColour(starColours.get(100 * (int) (i.getTemperature() / 100)));
 		}
+//		System.out.printf("%f, %f, %f, %f, %f\n", Maths.refAU, Maths.refEM, Maths.refSR, Maths.refER, Maths.refMR);
 	}
 	
 	public ArrayList<Star> getStars(){

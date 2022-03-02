@@ -8,6 +8,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import universim.generalClasses.Maths;
+
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
@@ -91,7 +93,7 @@ public class starAnalysis {
 			Scanner scanner = new Scanner(file);
 			int counter = 0;
 			int counter2 = 0;
-			while(scanner.hasNextDouble()&&counter2<30) {
+			while(scanner.hasNextDouble()&&counter2<5) {
 				Double mg = scanner.nextDouble();
 				Double bp_rp = scanner.nextDouble();
 				Double parallaxD = Double.MAX_VALUE;

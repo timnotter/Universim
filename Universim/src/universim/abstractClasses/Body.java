@@ -3,25 +3,26 @@ package universim.abstractClasses;
 import universim.ui.GameDisplay;
 
 public abstract class Body {
-	protected int x;
-	protected int y;
+	//Coordinates of object: 1 = 1 lightyear
+	protected double x;
+	protected double y;
 	
-	public Body(int x, int y) {
+	public Body(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
 	
-	public int getX() {
+	public double getX() {
 		return x;
 	}
-	public int getY() {
+	public double getY() {
 		return y;
 	}
-	public int setX(int x) {
+	public double setX(int x) {
 		this.x = x;
 		return x;
 	}
-	public int setY(int y) {
+	public double setY(int y) {
 		this.y = y;
 		return y;
 	}

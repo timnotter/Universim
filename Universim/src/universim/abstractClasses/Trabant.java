@@ -8,23 +8,22 @@ import universim.ui.GameDisplay;
 
 public abstract class Trabant extends CelestialBody{
 	protected Star parentStar;
-	protected double relX;		
-	protected double relY;
-	protected double relSX;		
-	protected double relSY;
-	protected int counter;
-	protected boolean visible;
+	protected double relX;			//Relative y
+	protected double relY;			//Relative x
+//	protected int counter;
 	
 	protected double temperature;	//In Kelvin
 	
 	protected double orbitRadius;	//In AU
+	protected double currDist;		//Current distance from parentStar in meter
+	protected double speedMS;		//Speed in m/s
+	protected double speedMSX;		//Speed in x-axis
+	protected double speedMSY;		//Speed in y-axis
 	protected double speed;			//Frequency of orbits - orbits per day
-	protected double speedDeg;		//Change in orbit - degree/day
-	protected double deg;			//Current degree of orbit to starting position
+//	protected double speedDeg;		//Change in orbit - degree/day									//Deprecated
+	protected double deg;			//Current degree of orbit to starting position					//Deprecated
 	protected int period;			//Orbital period - day/orbit - rounded for practical reasons
-	protected ArrayList<SubTrabant> subTrabants;
-	
-	
+	protected ArrayList<SubTrabant> subTrabants;	
 	
 	public Trabant(double size, double mass, double orbitRadius, Star parentStar) {
 		super(0, 0, size, mass);
@@ -37,66 +36,88 @@ public abstract class Trabant extends CelestialBody{
 			calculateSpeed();
 		}
 		
-		oRR = 1.495979 * Math.pow(10, 11);		//Orbit Radius Reference - AU
-		rR = 6371000;							//Radius Reference - Earth Radius
+		oRR = Maths.AU;							//Orbit Radius Reference - AU
+		rR = Maths.EM;							//Radius Reference - Earth Radius
 		mR = 5.97237 * Math.pow(10, 24);		//Mass Reference - Earth Mass
 	}
 	
 	public void setXY() {
-//		System.out.println("SetXY");
-		int ranDeg = (int)(Math.random()*360);
-		double tempX = orbitRadius * Maths.pixelPerAU;
-//		System.out.println("PPAU: " + Maths.pixelPerAU + ", tempX: " + tempX);
-		double tempY = 0;
-		
-		relSX = tempX*Math.cos(ranDeg) - tempY*Math.sin(ranDeg);
-		relSY = tempX*Math.sin(ranDeg) + tempY*Math.cos(ranDeg);
-		relX = relSX;
-		relY = relSY;
-		
-		if(parentStar!=null) {
-			x = (int)relX + parentStar.getX();
-			y = (int)relY + parentStar.getY();
-		}
-//		System.out.println("X: " + x + ", Y: " + y);
+		x = parentStar.getX() + (orbitRadius * oRR / Maths.lightyear);
+		y = parentStar.getY();		
+		currDist = orbitRadius * oRR;
 	}
 	
 	public void calculateSpeed() {
-//		System.out.println("Calculate Speed");
+		//Calculate speed of perfectly round orbit at this radius
 		if(parentStar==null)
 			return;
-//		System.out.println("parentMass: " + parentStar.getMass());
-//		System.out.println("orbitRadius: " + orbitRadius);
 		double parentMassKg = parentStar.getMass();
 		double orbitRadiusM = orbitRadius * oRR;
-		double G = 6.67430 * Math.pow(10, -11);
-//		System.out.println("G: " + G);
-		double speedMS = Math.sqrt(G*parentMassKg/orbitRadiusM);		//Speed int m/s
+		speedMS = Math.sqrt(Maths.G*parentMassKg/orbitRadiusM);			//Speed int m/s
 		double orbitLength = 2 * Math.PI * orbitRadiusM;
-//		System.out.println("speed: " + speedMS + "m/s");
-//		System.out.println("orbitLength: " + orbitLength + "m");
 		speed = speedMS/orbitLength * 86400;							//orbits/s * second per day
-		speedDeg = 360*speed;
 		period = (int)(1/speed);
-//		System.out.println("Period: " + period + ", Speed: " + speed + ", SpeedDeg: " + speedDeg);
+		speedMSX = 0;
+		speedMSY = speedMS;
 	}
 	
 	@Override
 	public void update(GameDisplay gameDisplay) {
-		deg += speedDeg/24;				//Divided by 24 for hourly updates
-		if(deg>=360)
-			deg -= 360;
-		double degRad = deg / 180 * Math.PI;
+		x = x + speedMSX * Maths.secondsPerTick / Maths.lightyear;
+		y = y + speedMSY * Maths.secondsPerTick / Maths.lightyear;
 		
-		relX = relSX*Math.cos(degRad) - relSY*Math.sin(degRad);
-		relY = relSX*Math.sin(degRad) + relSY*Math.cos(degRad);
-	}
-	
-	public void detPos(GameDisplay gameDisplay) {
-		if(parentStar==null)
+		double relX = (x - parentStar.getX()) * Maths.lightyear;
+		double relY = (y - parentStar.getY()) * Maths.lightyear;
+		currDist = Math.sqrt(relX * relX + relY * relY);
+		double totAcc = Maths.G * parentStar.getMass() / (currDist * currDist);		//Gravitational pull of parentStar		
+		double xAcc, yAcc;
+		if(relY==0&&relX==0) {
+			System.out.println("Collision");
 			return;
-		x = (int)(relX * gameDisplay.getScale()) + parentStar.getX();
-		y = (int)(relY * gameDisplay.getScale()) + parentStar.getY();
+		}
+		else if(relY==0) {
+			xAcc = totAcc;
+			yAcc = 0;
+		}
+		else if(relX==0) {
+			xAcc = 0;
+			yAcc = totAcc;
+		}
+		else {
+			xAcc = Math.sqrt(totAcc*totAcc*relX*relX/(relY*relY+relX*relX));
+			yAcc = Math.sqrt(totAcc*totAcc-(xAcc*xAcc));
+		}
+		
+		if(Double.isNaN(xAcc)||Double.isNaN(yAcc)) {
+			System.out.println("NaN");
+			System.out.printf("relX: %f, relY: %f, currDist: %f, totAcc: %f, xAcc: %f, yAcc: %f, yAcc: %f\n", relX, relY, currDist, totAcc, xAcc, yAcc, totAcc*totAcc-(xAcc*xAcc));
+			throw new IllegalStateException();
+		}
+		
+		if(relX>0) {
+			if(relY>0) {
+				//Bottom right quadrant
+				xAcc = -xAcc;
+				yAcc = -yAcc;
+			}
+			else {
+				//Top right quadrant
+				xAcc = -xAcc;
+			}
+		}
+		else {
+			if(relY>0) {
+				//Bottom left quadrant
+				yAcc = -yAcc;
+			}
+			else {
+				//Top left quadrant
+			}
+		}
+		
+		speedMSX += xAcc * Maths.secondsPerTick;		//Hourly updates
+		speedMSY += yAcc * Maths.secondsPerTick;
+		speed = Math.sqrt(speedMSX*speedMSX+speedMSY*speedMSY);
 	}
 	
 	public Star getParentStar() {

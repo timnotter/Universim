@@ -1,5 +1,7 @@
 package universim.generalClasses;
 
+import universim.dataAnalysis.Dot;
+
 public class Maths {
 //	Constants
 	public final static double lightyear = 9.460730473 * Math.pow(10, 15);
@@ -13,12 +15,19 @@ public class Maths {
 	public static double ER = 6371000;
 	public static double MR = 1737400;
 	
-	public final static double pixelPerAU = 500;							//Astronomical Unit
-	public final static double pixelPerEM = pixelPerAU * (EM/AU) * 5;		//Earth-Moon distance
+	public final static double pixelPerLY = 10000000;
 	
-	public final static double pixelPerSR = 20;								//Solar radius
-	public final static double pixelPerER = pixelPerSR * (ER/SR) * 5;		//Earth radius
-	public final static double pixelPerMR = pixelPerER * (MR/ER) * 2;		//Moon radius
+	public final static double refLY = 1;
+	public final static double refAU = refLY * (AU/lightyear)/**1.5*/;
+	public final static double refEM = refAU * (EM/AU)/* * 6*/;
+	
+	public final static double refSR = refLY * (SR/lightyear) * 2/* * 10*/;
+	public final static double refER = refSR * (ER/SR) * 2/* * 5*/;
+	public final static double refMR = refER * (MR/ER) * 2/* * 2*/;
+	
+	public final static double G = 6.67430 * Math.pow(10, -11);				//Gravitational Constant G
+	
+	public final static double secondsPerTick = 60;
 	
 	public static int temperatureAprox(double b_r) {
 		int temperature;
@@ -66,6 +75,16 @@ public class Maths {
 		radius = Math.sqrt((luminosity/(4*Math.PI*sigma*Math.pow(temperature, 4))));
 		double relation = radius/solarRadius;
 		return relation;
+	}
+	
+	public static boolean isWhiteDwarf(Dot i) {
+		if(i.mg>5&&i.bp_rp<0)
+			return true;
+		if(i.mg>9&&i.bp_rp<2)
+			return true;
+		if(i.mg>13&&i.bp_rp<3)
+			return true;
+		return false;
 	}
 }
 

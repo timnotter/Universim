@@ -13,7 +13,7 @@ public abstract class Star extends CelestialBody{
 	protected String classification;
 	private Color colour;
 	
-	public Star(int x, int y, double size, int temperature, double mass) {
+	public Star(double x, double y, double size, int temperature, double mass) {
 		super(x, y, size, mass);
 		this.temperature = temperature;
 		trabants = new ArrayList();
