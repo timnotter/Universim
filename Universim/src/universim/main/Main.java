@@ -4,11 +4,13 @@ import universim.abstractClasses.*;
 import universim.generalClasses.Date;
 import universim.generalClasses.Maths;
 import universim.ui.Renderer;
-import universim.threads.*;
 
 public class Main implements Runnable{
 	protected int refreshrate;
+	protected int[] refreshratePerSpeed;
 	protected int framerate;
+	long optimalRefreshTime;
+	long optimalFrameTime;
 	protected int gameSpeed;
 	protected Date date;
 	protected boolean running;
@@ -19,13 +21,25 @@ public class Main implements Runnable{
 	protected int width;
 	protected int height;
 	protected Data data;
+	protected Thread[] threads;
 	
-//	TODO Fix jittering
-//	TODO Find optimal gameSpeeds
+//	TODO Rethink scale panel
+//	TODO Add stars and planets
+//	TODO Meethod for determinig stars
+//	TODO Starclass analysis
 	
 	public Main() {
-		refreshrate = 10 * 60 * 60 * 24 * 5;	//Max of 5 days per second with 0.1 seconds per tick
+//		refreshrate = 10 * 60 * 60 * 24 * 5;	//Max of 5 days per second with 0.1 seconds per tick
+		refreshrate = 60;
+		refreshratePerSpeed = new int[6];
+		refreshratePerSpeed[1] = 10 * 60 * 60 * 12;
+		refreshratePerSpeed[2] = 10 * 60 * 60 * 24;
+		refreshratePerSpeed[3] = 10 * 60 * 60 * 24 * 2;
+		refreshratePerSpeed[4] = 10 * 60 * 60 * 24 * 3;
+		refreshratePerSpeed[5] = 10 * 60 * 60 * 24 * 10;
 		framerate = 60;
+	    optimalRefreshTime = 1000000000 / refreshrate;				//Optimal time in nanoseconds
+	    optimalFrameTime = 1000000000 / framerate;					//Optimal time of frame in nanoseconds
 		setGameSpeed(1);
 		date = new Date(1, 1, 2000);
 		data = new Data(this);
@@ -51,80 +65,54 @@ public class Main implements Runnable{
 	
 	public void run(){
 	    long lastLoopTime = System.nanoTime();
-	    final long optimalTime = 1000000000 / refreshrate;					//Optimal time in nanoseconds
-	    final long optimalFrameTime = 1000000000 / framerate;				//Optimal time of frame in nanoseconds
 	    long lastFrameUpdate = 0;
-	    long lastGameUpdate = 0;
 	    while(running){
 	        long now = System.nanoTime();
 	        long updateLength = now - lastLoopTime;			//In nano seconds
 	        lastLoopTime = now;
-	        double delta = updateLength / (double)optimalTime;
+	        double delta = updateLength / (double)optimalRefreshTime;
 
 //			if(Math.random()>=0.9999999)
 //				System.out.printf("uL: %d, oT: %d, delta: %f\n", updateLength, optimalTime, delta);
 	        
 	        //GameSpeed options
 	        if(!paused) {
-	        	switch(getGameSpeed()) {
-	        	case 1:
-	        		if(lastGameUpdate+(2000000000)/Maths.ticksPerDay<=now) {
-	        			updateGame(delta);
-	        			lastGameUpdate = now;
-	        		}
-	        		
-	        		break;
-	        	case 2:
-	        		if(lastGameUpdate+(1500000000)/Maths.ticksPerDay<=now) {
-	        			updateGame(delta);
-	        			lastGameUpdate = now;
-	        		}
-	        		break;
-	        	case 3:
-	        		if(lastGameUpdate+(1000000000)/Maths.ticksPerDay<=now) {
-	        			updateGame(delta);
-	        			lastGameUpdate = now;
-	        		}
-	        		break;
-	        	case 4:
-	        		if(lastGameUpdate+(500000000)/Maths.ticksPerDay<=now) {
-	        			updateGame(delta);
-	        			lastGameUpdate = now;
-	        		}
-	        		break;
-	        	case 5:
-		        	updateGame(delta);
-        			lastGameUpdate = now;
-		        	break;
-	        	}
+	        	updateGame(delta);
 	        }
 	        //Draw
 	        if(now-lastFrameUpdate>=optimalFrameTime) {
+	        	//Multithreading attempt - doesn't not help in any way
+//		        width = getRenderer().getWidth();
+//		        height = getRenderer().getHeight();
+//		        Thread drawThread = new Thread(new DrawThread(renderer));
+//		        drawThread.start();
+//		        try {
+//					drawThread.join();
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//		        lastFrameUpdate = now;
+
 		        width = getRenderer().getWidth();
 		        height = getRenderer().getHeight();
-		        Thread drawThread = new Thread(new DrawThread(renderer));
-		        drawThread.start();
-		        try {
-					drawThread.join();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 		        getRenderer().repaint();
 		        lastFrameUpdate = now;
+	        	
 	        }
-	        //Use sleep for "longer" pauses between ticks - less cpu usage
+	        //Use sleep if there are longer pauses between ticks (more than around 3.33 milliseconds) - less cpu usage
 	        if(refreshrate<300) {
 		        try{
 		        	long gameTime = System.nanoTime() - now;
-		        	if(gameTime < optimalTime) {
-		        		int sleepTime = (int)(optimalTime - gameTime);
+		        	if(gameTime < optimalRefreshTime) {
+		        		int sleepTime = (int)(optimalRefreshTime - gameTime);
 		        		int nanoSleepTime = sleepTime % 1000000;
 		        		int milliSleepTime = sleepTime / 1000000;
 //	        			if(Math.random()>=0.999)
-//	        				System.out.printf("gameTime: %d, optimalTime: %d, sleepTime: %d\n", gameTime, optimalTime, sleepTime);
+//	        				System.out.printf("gameTime: %d, optimalTime: %d, sleepTime: %d\n", gameTime, optimalRefreshTime, sleepTime);
 			            Thread.sleep(milliSleepTime, nanoSleepTime);
 		        	}
-//	        		System.out.printf("LastLoopTime: %d, optimalTime: %f\n", lastLoopTime, optimalTime);
+//		        	System.out.printf("GameTime: %d, expectedGameTime: %f, now: %d, nownow: %d\n", gameTime, 1000000000.0/refreshrate, System.nanoTime(), now);
+//	        		System.out.printf("LastLoopTime: %d, optimalTime: %f\n", lastLoopTime, optimalRefreshTime);
 //	            	System.out.printf("gameTime: %d, refreshrate: %d\n", gameTime, refreshrate);
 		        }
 		        catch(Exception e){
@@ -134,11 +122,11 @@ public class Main implements Runnable{
 	        }
 	        //Else use spin-lock - more precision
 	        else {
-	        	double gameTime = (double)System.nanoTime() - now;
-	        	while(gameTime<optimalTime) {
-	        		gameTime = (double)System.nanoTime() - now;
+	        	long gameTime = System.nanoTime() - now;
+	        	while(gameTime<optimalRefreshTime) {
+	        		gameTime = System.nanoTime() - now;
 	        	}
-//	        	System.out.printf("GameTime: %f, expectedGameTime: %f, now: %d, nownow: %d\n", gameTime, 1000000000.0/refreshrate, System.nanoTime(), now);
+//	        	System.out.printf("GameTime: %d, expectedGameTime: %f, now: %d, nownow: %d\n", gameTime, 1000000000.0/refreshrate, System.nanoTime(), now);
 	        }
 	    }
 	}
@@ -150,17 +138,34 @@ public class Main implements Runnable{
 			date.nextSecond();
 		}
 		else {
+//			System.out.println("Increment DeciSecond");
 			date.nextDeciSecond();
 		}
 		//Update position of stellar objects
-		for(Star i: getData().getStars()) {
+		//Multithreading attempt - Over 1000x slower
+//		threads = new Thread[getData().getStars().size()];
+//		for(int i=0;i<threads.length;i++) {
+////			System.out.println(i);
+//			threads[i] = new Thread(new UpdateThread(getData().getStars().get(i)));
+//			threads[i].start();
+//		}
+//		
+//		for(int i=threads.length-1;i>0;i--) {
+//			try {
+//				threads[i].join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}
+		for(Star i: data.getStars()) {
 			for(Trabant j: i.getTrabants()) {
-				j.update(renderer.getGameDisplay());
+				j.update();
 				for(SubTrabant k: j.getSubTrabants()) {
-					k.update(renderer.getGameDisplay());
+					k.update();
 				}
 			}
 		}
+		
 //		renderer.getGameDisplay().calc();
 	}
 	
@@ -168,9 +173,15 @@ public class Main implements Runnable{
 		return paused;
 	}
 	
-	public boolean setPaused(boolean newValue) {
+	public void setPaused(boolean newValue) {
 		paused = newValue;
-		return paused;
+		if(!paused) {
+			refreshrate = refreshratePerSpeed[gameSpeed];
+		}
+		else {
+			refreshrate = framerate;
+		}
+		optimalRefreshTime = 1000000000 / refreshrate;
 	}
 
 	public int getHeight() {
@@ -189,18 +200,16 @@ public class Main implements Runnable{
 		this.width = width;
 	}
 
-	public static void main(String[] args) {
-		Main main = new Main();
-		
-		main.start();
-	}
-
 	public int getGameSpeed() {
 		return gameSpeed;
 	}
 
 	public void setGameSpeed(int interval) {
 		gameSpeed = Math.max(1, Math.min(5, gameSpeed + interval));
+		if(!paused) {
+			refreshrate = refreshratePerSpeed[gameSpeed];
+			optimalRefreshTime = 1000000000 / refreshrate;
+		}
 //		System.out.printf("Gamespeed: %d\n", gameSpeed);
 	}
 
@@ -211,6 +220,11 @@ public class Main implements Runnable{
 	public Data getData() {
 		return data;
 	}	
+
+	public static void main(String[] args) {
+		Main main = new Main();
+		main.start();
+	}
 }
 
 

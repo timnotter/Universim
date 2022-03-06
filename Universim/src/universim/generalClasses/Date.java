@@ -62,6 +62,7 @@ public class Date {
 			seconds++;
 		}
 		else if(minutes<59) {
+//			System.out.println("New minute");
 			seconds = 0;
 			minutes++;
 		}

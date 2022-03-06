@@ -23,7 +23,7 @@ public class Maths {
 	//Displayed size of units of length with scale 1
 	public static final double pixelPerLY = 10000000;
 	public static final float multAU = 1;
-	public static final float multEM = multAU * 4;
+	public static final float multEM = multAU * 4;								//Deprecated
 	public static final float multSR = 2;
 	public static final float multER = multSR * 2;
 	public static final float multMR = multER * 1;

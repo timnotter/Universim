@@ -71,7 +71,7 @@ public abstract class Trabant extends CelestialBody {
 	}
 
 	@Override
-	public void update(GameDisplay gameDisplay) {
+	public void update() {
 //		System.out.printf("pX: %d, pY: %d, pSize: %f, posLX, %d, posLY, %d, posRX: %d, posRY: %d\n", pX, pY, pSize, pX-(int)pSize, pY-(int)pSize, pX+1+(int)pSize, pY+1+(int)pSize);
 
 //		System.out.println(relX + ", " + relY);

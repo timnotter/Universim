@@ -26,5 +26,5 @@ public abstract class Body {
 		this.y = y;
 		return y;
 	}
-	public abstract void update(GameDisplay gameDisplay);
+	public abstract void update();
 }

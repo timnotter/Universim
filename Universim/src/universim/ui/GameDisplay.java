@@ -177,7 +177,8 @@ public class GameDisplay extends JPanel {
 	//Set size of the displayed
 	public void setScale(double factor) {
 		this.scale *= factor;
-		scale = Math.max(scale, 0.0000000000000001);
+		scale = Math.max(Math.min(scale, 10000000), 0.0000000000000001);
+		System.out.println(scale);
 		updateDistances();
 	}
 }

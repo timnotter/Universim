@@ -25,7 +25,7 @@ public abstract class Star extends CelestialBody{
 	}
 	
 	@Override
-	public void update(GameDisplay gameDisplay) {
+	public void update() {
 		
 	}
 
