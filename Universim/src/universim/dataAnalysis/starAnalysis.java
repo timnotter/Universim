@@ -13,6 +13,7 @@ import universim.generalClasses.Maths;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
+//Analysis of Gaia star observations
 public class starAnalysis {
 	public static ArrayList<Dot> dots = new ArrayList();
 	public static JFrame jframe;
@@ -115,14 +116,7 @@ public class starAnalysis {
 		}
 	}
 	
-	public static void main(String[] args) {
-//		int sunTemp = Maths.temperatureAprox(0.63);
-//		System.out.println(sunTemp);
-//		double sunLum = Maths.luminosityAprox(4.83);
-//		System.out.println(sunLum);
-//		double sunRadius = Maths.radiusAprox(sunTemp, sunLum);
-//		System.out.println(sunRadius);
-		
+	public static void main(String[] args) {		
 //		File file = new File("dataSetGaia3OBPDesc.json");
 //		input(file, false);
 		File file = new File("src\\universim\\files\\datasetGaia3NSOBPDESC.json");
@@ -154,7 +148,7 @@ public class starAnalysis {
 		int VII = 0;
 		for(Dot i: dots) {
 			count++;
-			int temp = Maths.temperatureAprox(i.bp_rp);
+			int temp = Maths.temperatureApprox(i.bp_rp);
 			if(Maths.isWhiteDwarf(i))
 				D++;
 			else if(temp>=30000)

@@ -11,7 +11,7 @@ public class ClassOStar extends Star{
 //	Sub-dwarfs(rare):
 //		Luminosity: 1.5 - 2 Magnitudes dimmer (5 Magnitudes = * 100 - 1 Magnitude = * 2.5) -> smaller radius but higher temperature
 	
-	public ClassOStar(int x, int y, int size, int temperature, int mass) {
+	public ClassOStar(double x, double y, double size, int temperature, double mass) {
 		super(x, y, size, temperature, mass);
 	}
 

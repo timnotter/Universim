@@ -4,7 +4,7 @@ import universim.abstractClasses.Star;
 
 public class ClassAStar extends Star {
 
-	public ClassAStar(int x, int y, int size, int temperature, int mass) {
+	public ClassAStar(double x, double y, double size, int temperature, double mass) {
 		super(x, y, size, temperature, mass);
 	}
 

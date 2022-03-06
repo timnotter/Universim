@@ -17,9 +17,10 @@ public abstract class Star extends CelestialBody{
 		super(x, y, size, mass);
 		this.temperature = temperature;
 		trabants = new ArrayList();
-		oRR = 29000*Maths.lightyear;
-		rR = 69570000;
-		mR = 1.9885 * Math.pow(10, 30);
+		
+		oRR = 29000*Maths.lightyear;				//Distance to galactic core
+		rR = Maths.SR;
+		mR = Maths.SMASS;	
 		
 	}
 	

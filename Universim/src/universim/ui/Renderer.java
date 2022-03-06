@@ -23,14 +23,14 @@ public class Renderer extends JFrame{
 		this.data = data;
 		
 		setTitle("Universim");
-		setSize(1200, 800);
-		setMinimumSize(new Dimension(800, 600));
-		main.setWidth(1200);
-		main.setHeight(800);
+		setSize(1201, 801 + 30);
+		setMinimumSize(new Dimension(801, 601));
+//		setMinimumSize(new Dimension(1201, 801));
+		main.setWidth(1201);
+		main.setHeight(801 + 30);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(null);
 		setVisible(true);
-//		System.out.println("Renderer war created");
 		
 		topBar = new TopBar(main, this);
 		gameDisplay = new GameDisplay(main, this, data);

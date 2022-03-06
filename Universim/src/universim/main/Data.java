@@ -134,18 +134,22 @@ public class Data {
 		//Star: x, y, size, temperature, mass
 		//Trabant: size, mass, orbitRadius, habitability(, parentStar)
 		//SubTrabant: size, mass, orbitRadius, habitability(, parentTrabant)
-		stars.add(new ClassGStar(2500, 2400, 1, 5772, 1));
+		//Sun
+		stars.add(new ClassGStar(0, 0, 1, Maths.STEMP, 1));
 		
-		stars.get(0).addTrabant(new EarthLike(0.3, 0.1, 0.4, false));
-		stars.get(0).getTrabants().get(0).addSubTrabant(new BarrenMoon(0.1, 0.05, 0.3, false));
-		
+//		stars.get(0).addTrabant(new EarthLike(0.3, 0.1, 0.4, false));
+//		stars.get(0).getTrabants().get(0).addSubTrabant(new BarrenMoon(0.1, 0.05, 0.3, false));
+//		
 		stars.get(0).addTrabant(new EarthLike(1, 1, 1, false));
-//		stars.get(0).getTrabants().get(1).addSubTrabant(new BarrenMoon(1, 1, 1, false));
+		stars.get(0).getTrabants().get(0).addSubTrabant(new BarrenMoon(1, 1, 1, false));
 //		
 //		stars.get(0).addTrabant(new EarthLike(6, 16, 2.5, false));
 //		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(0.9, 0.3, 1.5, false));
 //		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(1.5, 0.8, 3, false));
 //		stars.get(0).getTrabants().get(2).addSubTrabant(new BarrenMoon(2.6, 1.6, 6, false));
+		
+		//Alpha Centauri
+		stars.add(new ClassGStar(3, 2.7, 1.22, Maths.temperatureApprox(0.65), 1.1));
 		
 		//Set colour of each star
 		for(Star i: stars) {

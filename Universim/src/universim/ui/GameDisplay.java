@@ -16,6 +16,7 @@ public class GameDisplay extends JPanel {
 	protected Main main;
 	protected Renderer renderer;
 	protected Data data;
+	protected CelestialBody centre;
 	protected double centreX;
 	protected double centreY;
 	protected double scale;
@@ -25,17 +26,16 @@ public class GameDisplay extends JPanel {
 	protected double pixelPerSR;
 	protected double pixelPerER;
 	protected double pixelPerMR;
-	protected CelestialBody centre;
 
 	public GameDisplay(Main main, Renderer renderer, Data data) {
 		this.main = main;
 		this.renderer = renderer;
 		this.data = data;
 		setBackground(new Color(25, 25, 25));
-		setBounds(0, 50, main.getWidth(), main.getHeight() - 50);
+		setBounds(0, 50, main.getWidth(), main.getHeight() - 50 - renderer.getInsets().top);
 
-		centreX = 2500;
-		centreY = 2400;
+		centreX = 0;
+		centreY = 0;
 		scale = 1;
 		updateDistances();
 	}
@@ -43,110 +43,81 @@ public class GameDisplay extends JPanel {
 	public void paintComponent(Graphics g2) {
 		Graphics2D g = (Graphics2D) g2;
 		super.paintComponent(g);
-		if (getCentre() != null) {
-			centreX = centre.getX();
-			centreY = centre.getY();
-		}
 		// Update bounds to window size
-		setBounds(0, 50, main.getWidth(), main.getHeight() - 50);
-
-		// Draw edge
-//		g.setColor(Color.black);
-//		g.setStroke(new BasicStroke(10));
-//		g.drawRect(0 - panelX, 0 - panelY, renderer.getWorldWidth() - 15, renderer.getWorldWidth() - 15);
-
+		setBounds(0, 50, main.getWidth(), main.getHeight() - 50 - renderer.getInsets().top);
+		
 		// Draw stars
 		draw(g);
 	}
 	
 	public void draw(Graphics2D g) {
-//		TODO Displaying everything to scale
 		double sSize, pSize, mSize;
 		int sX, sY, pX, pY, mX, mY;
 		for (Star i : data.getStars()) {
-			sSize = Math.max(i.getRelSize() * pixelPerSR, i.getRelSize());
-//			System.out.printf("RelSize: %f, ppSR: %f\n", i.getRelSize(), pixelPerSR);
-//			System.out.println(size + ", " + i.getRelSize() + ", " + scale);
-			sX = (int) ((((i.getX() - centreX)) * pixelPerLY) - sSize + (getWidth() / 2));
-			sY = (int) ((((i.getY() - centreY)) * pixelPerLY) - sSize + (getHeight() / 2));
-			g.setColor(i.getColour());
-			g.fill((Shape) new Ellipse2D.Double(sX, sY, 2 * sSize, 2 * sSize));
+			sSize = i.getRelSize() * pixelPerSR;
+			if (getCentre() != null) {
+				centreX = centre.getX();
+				centreY = centre.getY();
+			}
+			sX = (int)(((i.getX() - centreX)) * pixelPerLY) + ((getWidth() / 2) + 1);
+			sY = (int)(((i.getY() - centreY)) * pixelPerLY) + ((getHeight() / 2) + 1);
+			Color starColour = i.getColour();
+			if(sSize>=2) {
+				g.setColor(starColour);
+				g.fill((Shape) new Ellipse2D.Double(sX - (int)sSize, sY - (int)sSize, 2 * (int)sSize + 1, 2 * (int)sSize + 1));
+			}
+			else if(sSize > 1D/100000000) {
+				g.setColor(new Color(starColour.getRed(), starColour.getGreen(), starColour.getBlue(), Math.min((int)(sSize * 100000000), 255)));
+				g.fill((Shape) new Ellipse2D.Double(sX-1, sY-1, 3, 3));
+			}
 			for (Trabant j : i.getTrabants()) {
 				pSize = j.getRelSize() * pixelPerER;
-				pSize *= 30;
-				pX = (int) ((((j.getX() - i.getX()) * Maths.lightyear / Maths.AU * pixelPerAU) - pSize) + sX + sSize);
-				pY = (int) ((((j.getY() - i.getY()) * Maths.lightyear / Maths.AU * pixelPerAU) - pSize) + sY + sSize);
-				g.setColor(Color.blue);
-				g.setColor(new Color(50, 190, 255));
-				g.fill((Shape) new Ellipse2D.Double(pX, pY, 2 * pSize, 2 * pSize));
+				if (getCentre() != null) {
+					centreX = centre.getX();
+					centreY = centre.getY();
+				}
+				pX = (int)(((j.getX() - centreX)) * pixelPerLY) + ((getWidth() / 2) + 1);
+				pY = (int)(((j.getY() - centreY)) * pixelPerLY) + ((getHeight() / 2) + 1);
+//				System.out.printf("getX: %f, centreX: %f, equals: %b, getY: %f, centreY: %f\n", (j.getX())*1000000000, (centreX)*1000000000, j.getX()==centreX, j.getY(), centreY);
+//				System.out.printf("centre==centre: %b\n", j.equals(centre));
+//				System.out.printf("size: %f, x: %d, y: %d, centreX: %f, centreY: %f\n", pSize, pX, pY, centreX, centreY);
+//				System.out.printf("pX: %d, pY: %d, pSize: %f, posLX, %d, posLY, %d, posRX: %d, posRY: %d\n", pX, pY, pSize, pX-(int)pSize, pY-(int)pSize, pX+1+(int)pSize, pY+1+(int)pSize);
+				if (pSize > 1) {
+					g.setColor(new Color(50, 190, 255));
+					g.fill((Shape) new Ellipse2D.Double(pX - (int)pSize, pY - (int)pSize, 2 * (int)pSize + 1, 2 * (int)pSize + 1));
+				}
+				else if(pSize > 0.1) {
+					g.setColor(starColour);
+					g.fill((Shape) new Ellipse2D.Double(pX, pY, 1, 1));
+				}
+				else if(pSize > 1D/100) {
+					g.setColor(new Color(starColour.getRed(), starColour.getGreen(), starColour.getBlue(), Math.min((int)(pSize * 255) * 10, 255)));
+					g.fill((Shape) new Ellipse2D.Double(pX, pY, 1, 1));
+				}
 				for (SubTrabant k : j.getSubTrabants()) {
 					mSize = k.getRelSize() * pixelPerMR;
-					mSize *= 30;
-//					System.out.println(mSize);
-					mX = (int) ((((k.getX() - j.getX()) * Maths.lightyear / Maths.EM * pixelPerEM) - mSize) + pX + pSize);
-					mY = (int) ((((k.getY() - j.getY()) * Maths.lightyear / Maths.EM * pixelPerEM) - mSize) + pY + pSize);
-//					System.out.printf("pX: %d, pY: %d, mX: %d, mY: %d\n", pX, pY, mX, mY);
-					g.setColor(Color.yellow);
-					g.fill((Shape) new Ellipse2D.Double(mX, mY, 2 * mSize, 2 * mSize));
+					if (getCentre() != null) {
+						centreX = centre.getX();
+						centreY = centre.getY();
+					}
+					mX = (int)(((k.getX() - centreX)) * pixelPerLY) + ((getWidth() / 2) + 1);
+					mY = (int)(((k.getY() - centreY)) * pixelPerLY) + ((getHeight() / 2) + 1);
+					if (mSize > 1) {
+						g.setColor(Color.yellow);
+						g.fill((Shape) new Ellipse2D.Double(mX - (int)mSize, mY - (int)mSize, 2 * (int)mSize + 1, 2 * (int)mSize + 1));
+					}
+					else if(mSize > 0.33) {
+						g.setColor(starColour);
+						g.fill((Shape) new Ellipse2D.Double(mX, mY, 1, 1));
+					}
+					else if(mSize > 1D/100) {
+						g.setColor(new Color(starColour.getRed(), starColour.getGreen(), starColour.getBlue(), (int)(mSize * 255) * 3));
+						g.fill((Shape) new Ellipse2D.Double(mX, mY, 1, 1));
+					}
 				}
 			}
 		}
 	}
-
-//	public void oldDraw(Graphics2D g) {
-//		double size;
-//		int objX;
-//		int objY;
-//		for (Star i : data.getStars()) {
-//			size = Math.max(i.getRelSize() * Maths.pixelPerSR * scale, i.getRelSize());
-//			objX = (int) (((i.getX() - centreX) * scale) - size + (getWidth() / 2));
-//			objY = (int) (((i.getY() - centreY) * scale) - size + (getHeight() / 2));
-//			g.setColor(i.getColour());
-//			g.fill((Shape) new Ellipse2D.Double(objX, objY, 2 * size, 2 * size));
-//			for (Trabant j : i.getTrabants()) {
-//				size = j.getRelSize() * Maths.pixelPerER * scale;
-//				j.detPos(this);
-//				System.out.println(j.getX() + j.getY());
-//				if (size > 1) {
-//					objX = (int) (((j.getX() - centreX) * scale) - size + (getWidth() / 2));
-//					objY = (int) (((j.getY() - centreY) * scale) - size + (getHeight() / 2));
-//					g.setColor(Color.blue);
-//					g.setColor(new Color(50,190, 255));
-//					g.fill((Shape) new Ellipse2D.Double(objX, objY, 2 * size, 2 * size));
-//				} else if (size > 0.2) {
-//					objX = (int) (((j.getX() - centreX) * scale) + (getWidth() / 2));
-//					objY = (int) (((j.getY() - centreY) * scale) + (getHeight() / 2));
-//					g.setColor(i.getColour());
-//					g.fill((Shape) new Ellipse2D.Double(objX - 1, objY - 1, 2, 2));
-//				} else if (size > 0.1) {
-//					objX = (int) (((j.getX() - centreX) * scale) + (getWidth() / 2));
-//					objY = (int) (((j.getY() - centreY) * scale) + (getHeight() / 2));
-//					g.setColor(i.getColour());
-//					g.fill((Shape) new Ellipse2D.Double(objX, objY, 1, 1));
-//				}
-//				for (SubTrabant k : j.getSubTrabants()) {
-//					size = k.getRelSize() * Maths.pixelPerMR * scale;
-//					k.detPos(this);
-//					if (size > 1) {
-//						objX = (int) (((k.getX() - centreX) * scale) - size + (getWidth() / 2));
-//						objY = (int) (((k.getY() - centreY) * scale) - size + (getHeight() / 2));
-//						g.setColor(Color.yellow);
-//						g.fill((Shape) new Ellipse2D.Double(objX, objY, 2 * size, 2 * size));
-//					} else if (size > 0.5) {
-//						objX = (int) (((k.getX() - centreX) * scale) + (getWidth() / 2));
-//						objY = (int) (((k.getY() - centreY) * scale) + (getHeight() / 2));
-//						g.setColor(i.getColour());
-//						g.fill((Shape) new Ellipse2D.Double(objX - 1, objY - 1, 2, 2));
-//					} else if (size > 0.3) {
-//						objX = (int) (((k.getX() - centreX) * scale) + (getWidth() / 2));
-//						objY = (int) (((k.getY() - centreY) * scale) + (getHeight() / 2));
-//						g.setColor(i.getColour());
-//						g.fill((Shape) new Ellipse2D.Double(objX, objY, 1, 1));
-//					}
-//				}
-//			}
-//		}
-//	}
 	
 	public void updateDistances() {
 		pixelPerLY = Maths.pixelPerLY * scale;
@@ -157,10 +128,30 @@ public class GameDisplay extends JPanel {
 		pixelPerMR = Maths.refMR * pixelPerLY;
 //		System.out.printf("%f, %f, %f, %f, %f, %f\n", pixelPerLY, pixelPerAU, pixelPerEM, pixelPerSR, pixelPerER, pixelPerMR);
 	}
-
+	
+	//Calculate certain orbits for system outputs
+	public void calc() {
+		for (Star i : data.getStars()) {
+			double sSize = Math.max(i.getRelSize() * pixelPerSR, i.getRelSize());
+//			System.out.printf("RelSize: %f, ppSR: %f\n", i.getRelSize(), pixelPerSR);
+//			System.out.println(size + ", " + i.getRelSize() + ", " + scale);
+			int sX = (int) ((((i.getX() - centreX)) * pixelPerLY) + (getWidth() / 2) + 1);
+			int sY = (int) ((((i.getY() - centreY)) * pixelPerLY) + (getHeight() / 2) + 1);
+//			System.out.printf("pX: %d, pY: %d, pSize: %f, posLX, %d, posLY, %d, posRX: %d, posRY: %d\n", sX, sY, sSize, sX-(int)sSize, sY-(int)sSize, sX+1+(int)sSize, sY+1+(int)sSize);
+			for (Trabant j : i.getTrabants()) {
+				double pSize = j.getRelSize() * pixelPerER;
+				int pX = (int) ((j.getRelX() * pixelPerAU) + sX);
+				int pY = (int) ((j.getRelY() * pixelPerAU) + sY);				
+				System.out.printf("pX: %d, pY: %d, pSize: %f, posLX, %d, posLY, %d, posRX: %d, posRY: %d\n", pX, pY, pSize, pX-(int)pSize, pY-(int)pSize, pX+1+(int)pSize, pY+1+(int)pSize);
+			}
+		}
+	}
+	
+	//Move viewpoint
 	public void move(int x, int y) {
 		centreX += (x/1000000.0/scale);
 		centreY += (y/1000000.0/scale);
+		System.out.println(centreX + ", " + centreY);
 	}
 
 	public double getcentreX() {
@@ -182,9 +173,11 @@ public class GameDisplay extends JPanel {
 	public double getScale() {
 		return scale;
 	}
-
+	
+	//Set size of the displayed
 	public void setScale(double factor) {
 		this.scale *= factor;
+		scale = Math.max(scale, 0.0000000000000001);
 		updateDistances();
 	}
 }

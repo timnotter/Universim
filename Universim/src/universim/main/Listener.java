@@ -45,7 +45,7 @@ public class Listener implements KeyListener{
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		System.out.println("Released: " + e.getKeyCode());
+//		System.out.println("Released: " + e.getKeyCode());
 		if(e.getKeyCode()==37) {//right
 			if(gameDisplay.getCentre()==null)
 				gameDisplay.move(-1, 0);
@@ -63,14 +63,10 @@ public class Listener implements KeyListener{
 				gameDisplay.move(0, 1);
 		}
 		if(e.getKeyCode()==79) {//o - zoom in
-//			gameDisplay.setScale(gameDisplay.getScale() + (float)0.03);
 			gameDisplay.setScale(1.25);
-//			System.out.println(gameDisplay.getScale());
 		}
 		if(e.getKeyCode()==80) {//p - zoom out
-//			gameDisplay.setScale(Math.max(gameDisplay.getScale() - (float)0.03, (float)0.03));
 			gameDisplay.setScale(0.80);
-//			System.out.println(gameDisplay.getScale());
 		}
 		
 		
@@ -80,29 +76,27 @@ public class Listener implements KeyListener{
 	public void keyReleased(KeyEvent e) {
 //		System.out.println("Released: " + e.getKeyCode());
 		if(e.getKeyCode()==0) {//Paragraph
-			main.getRenderer().getGameDisplay().setCentre(targets.get(targetCounter));
+			gameDisplay.setCentre(targets.get(targetCounter));
 			if(targetCounter<targets.size()-1)
 				targetCounter++;
 			else
 				targetCounter = 0;
 		}
 		if(e.getKeyCode()==27) {//Escape
-			main.getRenderer().getGameDisplay().setCentre(null);
+			gameDisplay.setCentre(null);
 		}
 		if(e.getKeyCode()==32) {//Space
 			main.setPaused(!main.getPaused());
 //			System.out.println(main.getPaused());
 		}
-		if(e.getKeyCode()==33) {//pg up
-			main.setGameSpeed(Math.min(main.getGameSpeed()+1, 5));
-//			System.out.println(main.getGameSpeed());
+		if(e.getKeyCode()==33) {//Pg up
+			main.setGameSpeed(1);
 		}
-		if(e.getKeyCode()==34) {//pg down
-			main.setGameSpeed(Math.max(main.getGameSpeed()-1, 1));
-//			System.out.println(main.getGameSpeed());
+		if(e.getKeyCode()==34) {//Pg down
+			main.setGameSpeed(-1);
 		}
 		if(e.getKeyCode()==18) {//Left alt
-			main.tick();
+			main.updateGame(1);
 		}
 		
 	}

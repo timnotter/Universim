@@ -6,7 +6,7 @@ public class ClassGStar extends Star{
 	//Main-sequence star - yellow dwarf - 
 	//Mass: 0.9 - 1.1 solar mass
 	//Temperature: 5'300K - 6'000K
-	public ClassGStar(int x, int y, int size, int temperature, int mass) {
+	public ClassGStar(double x, double y, double size, int temperature, double mass) {
 		super(x, y, size, temperature, mass);
 	}
 

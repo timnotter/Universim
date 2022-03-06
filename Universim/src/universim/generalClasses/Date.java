@@ -1,11 +1,19 @@
 package universim.generalClasses;
 
 public class Date {
+	private int deciSeconds;
+	private int seconds;
+	private int minutes;
+	private int hours;
 	private int day;
 	private int month;
 	private int year;
 	
 	public Date(int day, int month, int year) {
+		deciSeconds = 0;
+		seconds = 0;
+		minutes = 0;
+		hours = 0;
 		this.day = day;
 		this.month = month;
 		this.year = year;
@@ -38,6 +46,37 @@ public class Date {
 		else if(this.year<1000)
 			year = "0" + year;
 		return(day + "." + month + "." + year);
+	}
+	
+	public Date nextDeciSecond() {
+		if(deciSeconds==9) {
+			deciSeconds = 0;
+			return nextSecond();
+		}
+		deciSeconds++;
+		return this;
+	}
+	
+	public Date nextSecond() {
+		if(seconds<59) {
+			seconds++;
+		}
+		else if(minutes<59) {
+			seconds = 0;
+			minutes++;
+		}
+		else if(hours<23) {
+			seconds = 0;
+			minutes = 0;
+			hours++;
+		}
+		else {
+			seconds = 0;
+			minutes = 0;
+			hours = 0;
+			return nextDay();
+		}
+		return this;
 	}
 	
 	public Date nextDay() {
