@@ -1,5 +1,6 @@
 package universim.abstractClasses;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import universim.generalClasses.Maths;
@@ -8,20 +9,24 @@ import universim.ui.GameDisplay;
 public abstract class SubTrabant extends CelestialBody {
 	protected Star parentStar;
 	protected Trabant parentTrabant;
-	protected double relX;					// Relative x to parentStar in AU
-	protected double relY;					// Relative y to parentStar in AU
-	protected double relXM;					// Relative x to parentStar in m
-	protected double relYM;					// Relative y to parentStar in m
-	protected double temperature; 			// In Kelvin
-	protected double orbitRadius; 			// In AU
-	protected double currDist; 				// Current distance from parenTrabant in meter
-	protected double speed; 				// Frequency of orbits - orbits per day
-	protected double speedMS; 				// Speed in m/s around parentTrabant
-	protected double speedXMS; 				// Speed in x-axis
-	protected double speedYMS;				// Speed in y-axis
-//	protected double speedDeg; 				// Change in orbit - degree/day									//Deprecated
-//	protected double deg; 					// Current degree of orbit to starting position					//Deprecated
-	protected int period; 					// Orbital period - day/orbit - rounded for practical reasons
+	protected double relX;					//Relative x to parentStar in AU
+	protected double relY;					//Relative y to parentStar in AU
+	protected double relXM;					//Relative x to parentStar in m
+	protected double relYM;					//Relative y to parentStar in m
+	protected double temperature; 			//In Kelvin
+	protected double orbitRadius; 			//In EM
+	protected double apoapsis;				//In EM
+	protected double periapsis;				//In EM
+	protected double currDist; 				//Current distance from parenTrabant in meter
+	protected double speed; 				//Frequency of orbits - orbits per day
+	protected double speedMS; 				//Speed in m/s around parentTrabant
+	protected double speedXMS; 				//Speed in x-axis
+	protected double speedYMS;				//Speed in y-axis
+//	protected double speedDeg; 				//Change in orbit - degree/day									//Deprecated
+//	protected double deg; 					//Current degree of orbit to starting position					//Deprecated
+	protected int period; 					//Orbital period - day/orbit - rounded for practical reasons
+	private Color colour;
+	private int orbit;						//1 if orbit is anti clockwise, -1 if orbit is clockwise
 
 	//Debugging
 //	protected double minDist;
@@ -37,57 +42,58 @@ public abstract class SubTrabant extends CelestialBody {
 //	protected double maxSpeed;
 //	protected double startSpeed;
 	protected ArrayList<SubTrabant> subTrabants;
-
-	public SubTrabant(double size, double mass, double orbitRadius, Trabant parentTrabant) {
+	
+	public SubTrabant(double size, double mass, double apoapsis, double periapsis, Trabant parentTrabant, boolean antiClock) {
 		super(0, 0, size, mass);
-		this.orbitRadius = orbitRadius;
+		this.apoapsis = apoapsis;
+		this.periapsis = periapsis;
+		orbitRadius = apoapsis;
 		this.parentTrabant = parentTrabant;
+		if(antiClock)
+			orbit = 1;
+		else
+			orbit = -1;	
+
+		oRR = Maths.EM; // Orbit Radius Reference - Distance Earth Moon
+		rR = Maths.MR; // Radius Reference - Moon Radius
+		mR = Maths.MMASS; // Mass Reference - Moon Mass
 
 		if (parentTrabant != null) {
 			setXY();
 			calculateSpeed();
 			parentStar = parentTrabant.getParentStar();
 		}
-
-		oRR = Maths.EM; // Orbit Radius Reference - Distance Earth Moon
-		rR = Maths.MR; // Radius Reference - Moon Radius
-		mR = Maths.MMASS; // Mass Reference - Moon Mass
 	}
 
 	public void setXY() {
 		x = y = 0;
-		relX = orbitRadius;
-		relY = 0;
+		//Determine "start" on elliptical orbit
+		currDist = Math.random() * (apoapsis-periapsis) + periapsis;
+		calculateSpeed();
+		double angle = (Math.random() * 2 * Math.PI);
+		relX = currDist * Math.cos(angle);
+		relY = (-1) * currDist * Math.sin(angle);
 		relXM = relX * oRR;
-		relYM = 0;
-		currDist = Math.sqrt(relXM * relXM + relYM * relYM);
-//		oldMaxDist = maxDist = currDist;
-//		minDrift = 80;
-//		maxDrift = 0;
-//		midDrift = 0;
-//		driftCounter = 0;
+		relYM = relY * oRR;
+		speedXMS = (orbit) * (-1) * speedMS * Math.sin(angle);
+		speedYMS = (orbit) * (-1) * speedMS * Math.cos(angle);
+//		System.out.printf("Angle: %f, currDist: %f, relX: %f, relY: %f, s: %f, sX: %f, sY: %f\n", angle, currDist, relX, relY, speedMS, speedXMS, speedYMS);
+		
+//		startDist = minDist = maxDist = currDist;
 	}
 
 	public void calculateSpeed() {
-		// Calculate speed of perfectly round orbit at this radius
 		if (parentTrabant == null)
 			return;
-		double orbitLength = 2 * Math.PI * currDist;
-		speedMS = Math.sqrt(Maths.G * parentTrabant.getMass() / currDist); // Speed int m/s
+		speedMS = Math.sqrt(Maths.G * parentTrabant.getMass() * ((2/(currDist*oRR))-(1/((apoapsis+periapsis)*oRR/2))));
 //		System.out.printf("CurrDist: %f, speedMS: %f\n", currDist, speedMS);
-		speed = speedMS / orbitLength * 86400; // orbits/s * second per day
-		period = (int) (1 / speed);
-		speedXMS = 0;
-		speedYMS = speedMS;
 //		startSpeed = minSpeed = maxSpeed = speedMS;
 	}
 
 	@Override
 	public void update() {
 //		System.out.println(relX + ", " + relY);
-		relXM = relX * oRR;
-		relYM = relY * oRR;
-		currDist = Math.sqrt(relXM * relXM + relYM * relYM);
+		currDist = Math.sqrt(relX * relX + relY * relY);
 		
 		//Analysis of drift
 //		if(currDist>maxDist)
@@ -119,7 +125,7 @@ public abstract class SubTrabant extends CelestialBody {
 //			minSpeed = speedMS;
 //		System.out.printf("speedMS: %f, startSpeed: %f, minSpeed: %f, maxSpeed: %f\n", speedMS, startSpeed, minSpeed, maxSpeed);
 		
-		double totAcc = Maths.G * parentTrabant.getMass() / (currDist * currDist); // Gravitational pull of parentStar
+		double totAcc = Maths.G * parentTrabant.getMass() / (currDist * oRR * currDist * oRR); // Gravitational pull of parentStar
 		double xAcc, yAcc;
 		if (relY == 0 && relX == 0) {
 			System.out.println("Moon collision");
@@ -167,6 +173,8 @@ public abstract class SubTrabant extends CelestialBody {
 
 		relX += (speedXMS * Maths.secondsPerTick / oRR);
 		relY += (speedYMS * Maths.secondsPerTick / oRR);
+		relXM = relX * oRR;
+		relYM = relY * oRR;
 
 		speedXMS += xAcc * Maths.secondsPerTick;
 		speedYMS += yAcc * Maths.secondsPerTick;
@@ -242,6 +250,14 @@ public abstract class SubTrabant extends CelestialBody {
 
 	public void setRelY(double relY) {
 		this.relY = relY;
+	}
+
+	public Color getColour() {
+		return colour;
+	}
+
+	public void setColour(Color colour) {
+		this.colour = colour;
 	}
 
 	@Override

@@ -25,18 +25,24 @@ public class Main implements Runnable{
 	
 //	TODO Rethink scale panel
 //	TODO Add stars and planets
-//	TODO Meethod for determinig stars
+//	TODO Improve orbit calculation
+//	TODO Introduce 3. dimension
+//	TODO Method for determinig stars
 //	TODO Starclass analysis
 	
 	public Main() {
-//		refreshrate = 10 * 60 * 60 * 24 * 5;	//Max of 5 days per second with 0.1 seconds per tick
 		refreshrate = 60;
-		refreshratePerSpeed = new int[6];
-		refreshratePerSpeed[1] = 10 * 60 * 60 * 12;
-		refreshratePerSpeed[2] = 10 * 60 * 60 * 24;
-		refreshratePerSpeed[3] = 10 * 60 * 60 * 24 * 2;
-		refreshratePerSpeed[4] = 10 * 60 * 60 * 24 * 3;
-		refreshratePerSpeed[5] = 10 * 60 * 60 * 24 * 10;
+		refreshratePerSpeed = new int[11];
+		refreshratePerSpeed[1] = 60 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[2] = 60 * 60 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[3] = 60 * 60 * 3 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[4] = 60 * 60 * 6 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[5] = 60 * 60 * 9 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[6] = 60 * 60 * 12 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[7] = 60 * 60 * 24 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[8] = 60 * 60 * 24 * 2 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[9] = 60 * 60 * 24 * 3 * (int)(1/Maths.secondsPerTick);
+		refreshratePerSpeed[10] = 60 * 60 * 24 * 10 * 10;
 		framerate = 60;
 	    optimalRefreshTime = 1000000000 / refreshrate;				//Optimal time in nanoseconds
 	    optimalFrameTime = 1000000000 / framerate;					//Optimal time of frame in nanoseconds
@@ -205,7 +211,7 @@ public class Main implements Runnable{
 	}
 
 	public void setGameSpeed(int interval) {
-		gameSpeed = Math.max(1, Math.min(5, gameSpeed + interval));
+		gameSpeed = Math.max(1, Math.min(refreshratePerSpeed.length-1, gameSpeed + interval));
 		if(!paused) {
 			refreshrate = refreshratePerSpeed[gameSpeed];
 			optimalRefreshTime = 1000000000 / refreshrate;
@@ -226,5 +232,3 @@ public class Main implements Runnable{
 		main.start();
 	}
 }
-
-

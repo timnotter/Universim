@@ -21,19 +21,19 @@ public class Maths {
 	public static final double G = 6.67430 * Math.pow(10, -11);					//Gravitational constant G
 	public static final double SIGMA = 5.670374419 * Math.pow(10, -8);			//Stefan-Boltzmann constant
 	//Displayed size of units of length with scale 1
-	public static final double pixelPerLY = 10000000;
-	public static final float multAU = 1;
+	public static final double pixelPerLY = 20000000;							//Base for scale = 1
+	public static final float multAU = 1;										//Deprecated
 	public static final float multEM = multAU * 4;								//Deprecated
-	public static final float multSR = 2;
-	public static final float multER = multSR * 2;
-	public static final float multMR = multER * 1;
+	public static final float multSR = 2;										//Deprecated
+	public static final float multER = multSR * 2;								//Deprecated
+	public static final float multMR = multER * 1;								//Deprecated
 	//Relative sizes compared to 1 lightyear
 	public static final double refLY = 1;
 	public static final double refAU = refLY * (AU/lightyear);
-	public static final double refEM = refLY * (EM/lightyear) * multEM;
-	public static final double refSR = refLY * (SR/lightyear) * multSR;
-	public static final double refER = refLY * (ER/lightyear) * multER;
-	public static final double refMR = refLY * (MR/lightyear) * multMR;
+	public static final double refEM = refLY * (EM/lightyear);
+	public static final double refSR = refLY * (SR/lightyear);
+	public static final double refER = refLY * (ER/lightyear);
+	public static final double refMR = refLY * (MR/lightyear);
 	//Amount of updates per in game second - correctness of physics calculations
 	public static final double secondsPerTick = 0.1;
 	public static final double ticksPerDay = (24 * 60 * 60) / secondsPerTick;

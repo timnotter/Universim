@@ -64,12 +64,18 @@ public class TopBar extends JPanel{
 		gameSpeedLabel.setText("" + main.getGameSpeed());
 		scaleLabel.setBounds(main.getWidth()-200, 30, 200, 20);
 		if(renderer.getGameDisplay().pixelPerLY<=200)
-			scaleLabel.setText("100 pixels: " + 100/renderer.getGameDisplay().pixelPerLY + " LY");
-		else if(renderer.getGameDisplay().pixelPerAU<=200) {
-			scaleLabel.setText("100 pixels: " + 100/renderer.getGameDisplay().pixelPerAU + " AU");
+			scaleLabel.setText("100 pixels: " + (((double)((long)(100*(100/renderer.getGameDisplay().pixelPerLY))))/100) + " LY");
+		else if(renderer.getGameDisplay().pixelPerAU<=1000) {
+			scaleLabel.setText("100 pixels: " + (((double)((long)(100*(100/renderer.getGameDisplay().pixelPerAU))))/100) + " AU");
+		}
+		else if(renderer.getGameDisplay().pixelPerEM<=200) {
+			scaleLabel.setText("100 pixels: " + (((double)((long)(100*(100/renderer.getGameDisplay().pixelPerSR))))/100) + " SR");
+		}
+		else if(renderer.getGameDisplay().pixelPerER<=200) {
+			scaleLabel.setText("100 pixels: " + (((double)((long)(100*(100/renderer.getGameDisplay().pixelPerER))))/100) + " ER");
 		}
 		else {
-			scaleLabel.setText("100 pixels: " + 100/renderer.getGameDisplay().pixelPerLY*Maths.lightyear/1000 + " km");
+			scaleLabel.setText("100 pixels: " + ((long)(100/renderer.getGameDisplay().pixelPerLY*Maths.lightyear/1000)) + " km");
 		}
 	}
 }

@@ -15,27 +15,12 @@ public class Listener implements KeyListener{
 	private Data data;
 	private Renderer renderer;
 	private GameDisplay gameDisplay;
-	private ArrayList<CelestialBody> targets;
-	private int targetCounter;						//To iterate through list of all celestial bodies
 	
 	public Listener(Main main) {
 		this.main = main;
 		data = main.getData();
 		renderer = main.getRenderer();
 		gameDisplay = renderer.getGameDisplay();
-		
-		//Fill list of all
-		targets = new ArrayList();
-		for(Star i: data.getStars()) {
-			targets.add(i);
-			for(Trabant j: i.getTrabants()) {
-				targets.add(j);
-				for(SubTrabant k: j.getSubTrabants()) {
-					targets.add(k);
-				}
-			}
-		}
-		targetCounter = 0;
 	}
 	
 	@Override
@@ -63,10 +48,10 @@ public class Listener implements KeyListener{
 				gameDisplay.move(0, 1);
 		}
 		if(e.getKeyCode()==79) {//o - zoom in
-			gameDisplay.setScale(1.25);
+			gameDisplay.setScale(20.0/19);
 		}
 		if(e.getKeyCode()==80) {//p - zoom out
-			gameDisplay.setScale(0.80);
+			gameDisplay.setScale(0.95);
 		}
 		
 		
@@ -76,14 +61,28 @@ public class Listener implements KeyListener{
 	public void keyReleased(KeyEvent e) {
 //		System.out.println("Released: " + e.getKeyCode());
 		if(e.getKeyCode()==0) {//Paragraph
-			gameDisplay.setCentre(targets.get(targetCounter));
-			if(targetCounter<targets.size()-1)
-				targetCounter++;
-			else
-				targetCounter = 0;
+			gameDisplay.setScale(1/gameDisplay.getScale());
+		}
+		if(e.getKeyCode()==49) {//1
+			gameDisplay.nextSun(-1);
+		}
+		if(e.getKeyCode()==50) {//2
+			gameDisplay.nextSun(1);
+		}
+		if(e.getKeyCode()==51) {//3
+			gameDisplay.nextTrabant(-1);
+		}
+		if(e.getKeyCode()==52) {//4
+			gameDisplay.nextTrabant(1);
+		}
+		if(e.getKeyCode()==53) {//5
+			gameDisplay.nextSubTrabant(-1);
+		}
+		if(e.getKeyCode()==54) {//6
+			gameDisplay.nextSubTrabant(1);
 		}
 		if(e.getKeyCode()==27) {//Escape
-			gameDisplay.setCentre(null);
+			gameDisplay.resetCentre();
 		}
 		if(e.getKeyCode()==32) {//Space
 			main.setPaused(!main.getPaused());
@@ -95,8 +94,9 @@ public class Listener implements KeyListener{
 		if(e.getKeyCode()==34) {//Pg down
 			main.setGameSpeed(-1);
 		}
-		if(e.getKeyCode()==18) {//Left alt
-			main.updateGame(1);
+		if(e.getKeyCode()==78) {//n
+			for(int i=0;i<10*60*60;i++)
+				main.updateGame(1);
 		}
 		
 	}
