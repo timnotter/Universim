@@ -6,6 +6,7 @@ import universim.abstractClasses.Trabant;
 public class BarrenMoon extends Moon{
 	public BarrenMoon(double size, double mass, double orbitRadius, boolean habitability, Trabant parentTrabant) {
 		super(size, mass, orbitRadius, habitability, parentTrabant);
+		super.type = "Barren Moon";
 	}
 	
 	public BarrenMoon(double size, double mass, double orbitRadius, boolean habitability) {
@@ -14,6 +15,7 @@ public class BarrenMoon extends Moon{
 	
 	public BarrenMoon(double size, double mass, double apoapsis, double periapsis, boolean habitability, Trabant parentTrabant) {
 		super(size, mass, apoapsis, periapsis, habitability, parentTrabant);
+		super.type = "Barren Moon";
 	}
 	
 	public BarrenMoon(double size, double mass, double apoapsis, double periapsis, boolean habitability) {

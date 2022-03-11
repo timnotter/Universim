@@ -31,11 +31,11 @@ public class TopBar extends JPanel{
 		Border border = BorderFactory.createLineBorder(Color.black);
 		setBorder(border);
 		dateLabel = new JLabel(main.getDate().toString());
-		createLabel(dateLabel, main.getWidth()-200, 0, 126, 31);
+		createLabel(dateLabel, main.getWidth()-200, 0, 116, 31);
 		gameSpeedLabel = new JLabel("" + main.getGameSpeed());
-		createLabel(gameSpeedLabel, main.getWidth()-75, 75, 50, 31);
+		createLabel(gameSpeedLabel, main.getWidth()-85, 0, 72, 31);
 		scaleLabel = new JLabel("100 pixels: " + 0 + "m");
-		createLabel(scaleLabel, main.getWidth()-200, 30, 200, 20);
+		createLabel(scaleLabel, main.getWidth()-200, 30, 187, 20);
 //		System.out.println(scaleLabel.getFont().getName());
 //		System.out.println(scaleLabel.getFont());
 		scaleLabel.setFont(new Font("Dialog", Font.BOLD, 9));
@@ -53,16 +53,16 @@ public class TopBar extends JPanel{
 	
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
-		g.setColor(Color.black);
-		g.drawLine(main.getWidth()-100, 0, main.getWidth()-100, 50);
 		setBounds(0, 0, renderer.getWidth(), 50);
 		
-		dateLabel.setBounds(main.getWidth()-200, 0, 126, 31);
+		dateLabel.setBounds(main.getWidth()-200, 0, 116, 31);
 		dateLabel.setText(main.getDate().toString());
-		gameSpeedLabel.setBounds(main.getWidth()-75, 0, 75, 31);
-		gameSpeedLabel.setText("" + main.getGameSpeed());
-		scaleLabel.setBounds(main.getWidth()-200, 30, 200, 20);
+		gameSpeedLabel.setBounds(main.getWidth()-85, 0, 72, 31);
+		if(main.isPaused())
+			gameSpeedLabel.setText("--- " + main.getGameSpeed() + " ---");
+		else
+			gameSpeedLabel.setText("" + main.getGameSpeed());
+		scaleLabel.setBounds(main.getWidth()-200, 30, 187, 20);
 		if(renderer.getGameDisplay().pixelPerLY<=200)
 			scaleLabel.setText("100 pixels: " + (((double)((long)(100*(100/renderer.getGameDisplay().pixelPerLY))))/100) + " LY");
 		else if(renderer.getGameDisplay().pixelPerAU<=1000) {

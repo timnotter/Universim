@@ -24,7 +24,8 @@ public abstract class Trabant extends CelestialBody {
 //	protected double speedDeg;				//Change in orbit - degree/day									//Deprecated
 //	protected double deg; 					//Current degree of orbit to starting position 					//Deprecated
 	protected int period; 					//Orbital period - day/orbit - rounded for practical reasons
-	private Color colour;
+	protected Color colour;
+	protected String type;
 	protected ArrayList<SubTrabant> subTrabants;
 
 //	protected double minDist;

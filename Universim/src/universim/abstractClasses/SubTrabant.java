@@ -25,23 +25,25 @@ public abstract class SubTrabant extends CelestialBody {
 //	protected double speedDeg; 				//Change in orbit - degree/day									//Deprecated
 //	protected double deg; 					//Current degree of orbit to starting position					//Deprecated
 	protected int period; 					//Orbital period - day/orbit - rounded for practical reasons
-	private Color colour;
-	private int orbit;						//1 if orbit is anti clockwise, -1 if orbit is clockwise
+	protected int orbit;					//1 if orbit is anti clockwise, -1 if orbit is clockwise
+	protected Color colour;
+	protected String type;
+	protected ArrayList<SubTrabant> subTrabants;
 
 	//Debugging
-//	protected double minDist;
-//	protected double oldMaxDist;
-//	protected double maxDist;
-//	protected int dayCounter;
-//	protected double maxDrift;
-//	protected double minDrift;
-//	protected double midDrift;
-//	protected int driftCounter;
-//	protected double startDist;
-//	protected double minSpeed;
-//	protected double maxSpeed;
-//	protected double startSpeed;
-	protected ArrayList<SubTrabant> subTrabants;
+	protected double minDist;
+	protected double oldMinDist;
+	protected double maxDist;
+	protected double oldMaxDist;
+	protected int dayCounter;
+	protected double maxDrift;
+	protected double minDrift;
+	protected double midDrift;
+	protected int driftCounter;
+	protected double startDist;
+	protected double minSpeed;
+	protected double maxSpeed;
+	protected double startSpeed;
 	
 	public SubTrabant(double size, double mass, double apoapsis, double periapsis, Trabant parentTrabant, boolean antiClock) {
 		super(0, 0, size, mass);
@@ -53,6 +55,7 @@ public abstract class SubTrabant extends CelestialBody {
 			orbit = 1;
 		else
 			orbit = -1;	
+		dayCounter = 0;
 
 		oRR = Maths.EM; // Orbit Radius Reference - Distance Earth Moon
 		rR = Maths.MR; // Radius Reference - Moon Radius
@@ -93,11 +96,13 @@ public abstract class SubTrabant extends CelestialBody {
 	@Override
 	public void update() {
 //		System.out.println(relX + ", " + relY);
-		currDist = Math.sqrt(relX * relX + relY * relY);
-		
-		//Analysis of drift
+//		currDist = Math.sqrt(relX * relX + relY * relY);
+//		
+//		//Analysis of drift
 //		if(currDist>maxDist)
 //			maxDist = currDist;
+//		if(currDist<minDist)
+//			minDist = currDist;
 //		dayCounter++;
 //		
 //		if(dayCounter>=Maths.ticksPerDay) {
@@ -107,17 +112,23 @@ public abstract class SubTrabant extends CelestialBody {
 //			if(drift>maxDrift)
 //				maxDrift = drift;
 //			driftCounter++;
-//			if(driftCounter==1)
+//			if(driftCounter==1) {
+//				midDrift = 0;
+//				maxDrift = 0;
+//				minDrift = 100;
+//			}
+//			else if(driftCounter==2) {
 //				midDrift = drift;
+//			}
 //			else {
-//				midDrift = ((driftCounter-1) * midDrift + drift)/driftCounter;
+//				midDrift = ((driftCounter-2) * midDrift + drift)/(driftCounter-1);
 //			}
 //			System.out.printf("CurrDrift: %f, minDrift: %f, maxDrift: %f, midDrift: %f\n", drift, minDrift, maxDrift, midDrift);
 //			oldMaxDist = maxDist;
+//			oldMinDist = minDist;
 //			dayCounter = 0;
 //		}
-//		if(currDist<minDist)
-//			minDist = currDist;
+		
 //		System.out.printf("CurrDist: %f, startDist: %f, minDist: %f, maxDist: %f\n", currDist, startDist, minDist, maxDist);
 //		if(speedMS>maxSpeed)
 //			maxSpeed = speedMS;

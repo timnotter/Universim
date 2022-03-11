@@ -231,4 +231,8 @@ public class Main implements Runnable{
 		Main main = new Main();
 		main.start();
 	}
+
+	public boolean isPaused() {
+		return paused;
+	}
 }
