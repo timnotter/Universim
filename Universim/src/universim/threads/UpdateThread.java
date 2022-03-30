@@ -6,19 +6,23 @@ import universim.abstractClasses.SubTrabant;
 
 public class UpdateThread implements Runnable{
 	protected Star star;
+	protected int ticks;
 	
-	public UpdateThread(Star star) {
+	public UpdateThread(Star star, int ticks) {
 		this.star = star;
+		this.ticks = ticks;
 	}
 	
 	@Override
 	public void run() {
-		for(Trabant i: star.getTrabants()) {
-//			System.out.println("Updated Trabant");
-			i.update();
-			for(SubTrabant j: i.getSubTrabants()) {
-//				System.out.println("Updated SubTrabant");
+		for(int i=0;i<ticks;i++) {
+			for(Trabant j: star.getTrabants()) {
+//				System.out.println("Updated Trabant");
 				j.update();
+				for(SubTrabant k: j.getSubTrabants()) {
+//					System.out.println("Updated SubTrabant");
+					k.update();
+				}
 			}
 		}
 	}

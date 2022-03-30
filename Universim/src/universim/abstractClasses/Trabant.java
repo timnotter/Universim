@@ -13,10 +13,11 @@ public abstract class Trabant extends CelestialBody {
 	protected double relXM;					//Relative x to parentStar in m
 	protected double relYM;					//Relative y to parentStar in m
 	protected double temperature; 			//In Kelvin
-	protected double orbitRadius;			//In AU
+//	protected double orbitRadius;			//In AU
 	protected double apoapsis;				//In AU
 	protected double periapsis;				//In AU
-	protected double currDist; 				//Current distance from parentStar in meter
+	protected double currDist; 				//Current distance from parentStar in oRR
+	protected double currDistM;				//Current distance from parentStar in meter
 	protected double speedMS; 				//Speed in m/s around parentStar
 	protected double speedXMS; 				//Speed in x-axis
 	protected double speedYMS; 				//Speed in y-axis
@@ -43,7 +44,7 @@ public abstract class Trabant extends CelestialBody {
 		super(0, 0, size, mass);
 		this.apoapsis = apoapsis;
 		this.periapsis = periapsis;
-		orbitRadius = apoapsis;
+//		orbitRadius = apoapsis;
 		this.parentStar = parentStar;
 		subTrabants = new ArrayList();
 		oRR = Maths.AU; // Orbit Radius Reference - AU
@@ -59,6 +60,7 @@ public abstract class Trabant extends CelestialBody {
 		x = y = 0;
 		//Determine "start" on elliptical orbit
 		currDist = Math.random() * (apoapsis-periapsis) + periapsis;
+		currDistM = currDist * oRR;
 		calculateSpeed();
 		double angle = (Math.random() * 2 * Math.PI);
 		relX = currDist * Math.cos(angle);
@@ -75,28 +77,19 @@ public abstract class Trabant extends CelestialBody {
 	public void calculateSpeed() {
 		if (parentStar == null)
 			return;
-		speedMS = Math.sqrt(Maths.G * parentStar.getMass() * ((2/(currDist*oRR))-(1/((apoapsis+periapsis)*oRR/2))));
+		speedMS = Math.sqrt(Maths.G * parentStar.getMass() * ((2/(currDistM))-(1/((apoapsis+periapsis)*oRR/2))));
 //		System.out.println(speedMS);
 //		startSpeed = minSpeed = maxSpeed = speedMS;
 	}
 
 	@Override
 	public void update() {
-		currDist = Math.sqrt(relX * relX + relY * relY);
-//		if(currDist>maxDist)
-//			maxDist = currDist;
-//		if(currDist<minDist)
-//			minDist = currDist;
-//		if(Math.random()>=0.9)
-//			System.out.printf("CurrDist: %f, startDist: %f, minDist: %f, maxDist: %f\n", currDist, startDist, minDist, maxDist);
-//		if(speedMS>maxSpeed)
-//			maxSpeed = speedMS;
-//		if(speedMS<minSpeed)
-//			minSpeed = speedMS;
-//		System.out.printf("speedMS: %f, startSpeed: %f, minSpeed: %f, maxSpeed: %f\n", speedMS, startSpeed, minSpeed, maxSpeed);
-
+//		driftCalc();
 		
-		double totAcc = Maths.G * parentStar.getMass() / (currDist * oRR * currDist * oRR); // Gravitational pull of parentStar
+		currDist = Math.sqrt(relX * relX + relY * relY);
+		currDistM = currDist * oRR;
+		
+		double totAcc = Maths.G * parentStar.getMass() / (currDistM * currDistM); 	// Gravitational pull of parentStar
 		double xAcc, yAcc;
 		if (relY == 0 && relX == 0) {
 			System.out.println("Earth Collision");
@@ -108,44 +101,49 @@ public abstract class Trabant extends CelestialBody {
 			xAcc = 0;
 			yAcc = totAcc;
 		} else {
-			xAcc = Math.sqrt(totAcc * totAcc * relXM * relXM / (relYM * relYM + relXM * relXM));
-			yAcc = Math.sqrt(totAcc * totAcc - (xAcc * xAcc));
+			//Old Way
+//			xAcc = Math.sqrt(totAcc * totAcc * relXM * relXM / (relYM * relYM + relXM * relXM));
+//			yAcc = Math.sqrt(totAcc * totAcc - (xAcc * xAcc));
+			//Simplified way
+			xAcc = -(relX * totAcc/currDist);
+			yAcc = -(relY * totAcc/currDist);
 		}
 
-		if (Double.isNaN(xAcc) || Double.isNaN(yAcc)) {
-			System.out.println("NaN in Trabant");
-			System.out.printf("relXM: %f, relYM: %f, currDist: %f, totAcc: %f, xAcc: %f, yAcc: %f,  speedMS: %f\n", relXM,
-					relYM, currDist, totAcc, xAcc, yAcc, speedMS);
-			if(Double.isNaN(xAcc))
-				xAcc = 0;
-			else
-				yAcc = 0;
-//			System.out.println(xAcc + ", " + yAcc);
-//			throw new IllegalStateException();
-		}
-		if (relX > 0) {
-			if (relY > 0) {
-				// Bottom right quadrant
-				xAcc = -xAcc;
-				yAcc = -yAcc;
-			} else {
-				// Top right quadrant
-				xAcc = -xAcc;
-			}
-		} else {
-			if (relY > 0) {
-				// Bottom left quadrant
-				yAcc = -yAcc;
-			} else {
-				// Top left quadrant
-			}
-		}
+		//Only needed by old way
+//		if (Double.isNaN(xAcc) || Double.isNaN(yAcc)) {
+//			System.out.println("NaN in Trabant");
+//			System.out.printf("relXM: %f, relYM: %f, currDistM: %f, totAcc: %f, xAcc: %f, yAcc: %f,  speedMS: %f\n", relXM,
+//					relYM, currDistM, totAcc, xAcc, yAcc, speedMS);
+//			if(Double.isNaN(xAcc))
+//				xAcc = 0;
+//			else
+//				yAcc = 0;
+////			System.out.println(xAcc + ", " + yAcc);
+////			throw new IllegalStateException();
+//		}
+//		if (relX > 0) {
+//			if (relY > 0) {
+//				// Bottom right quadrant
+//				xAcc = -xAcc;
+//				yAcc = -yAcc;
+//			} else {
+//				// Top right quadrant
+//				xAcc = -xAcc;
+//			}
+//		} else {
+//			if (relY > 0) {
+//				// Bottom left quadrant
+//				yAcc = -yAcc;
+//			} else {
+//				// Top left quadrant
+//			}
+//		}
 //		System.out.printf("relXM: %f, relYM: %f, currDist: %f, totAcc: %f, xAcc: %f, yAcc: %f, yAcc: %f\n", relXM, relYM, currDist, totAcc, xAcc, yAcc, totAcc*totAcc-(xAcc*xAcc));
 //		System.out.printf("speedXMS: %f, speedYMS: %f\n", speedXMS, speedYMS);
-		relX += (speedXMS * Maths.secondsPerTick / oRR);
-		relY += (speedYMS * Maths.secondsPerTick / oRR);
-		relXM = relX * oRR;
-		relYM = relY * oRR;
+		relXM += (speedXMS * Maths.secondsPerTick);
+		relYM += (speedYMS * Maths.secondsPerTick);
+		relX = relXM / oRR;
+		relY = relYM / oRR;
 
 		speedXMS += xAcc * Maths.secondsPerTick;
 		speedYMS += yAcc * Maths.secondsPerTick;
@@ -172,14 +170,14 @@ public abstract class Trabant extends CelestialBody {
 		this.speed = speed;
 		return speed;
 	}
-
+	//Deprecated
 	public double getOrbitRadius() {
-		return orbitRadius;
+		return apoapsis;
 	}
-
-	public double setOrbitRadius(double orbitRadius) {
-		this.orbitRadius = orbitRadius;
-		return orbitRadius;
+	//Deprecated
+	public double setOrbitRadius(double apoapsis) {
+		this.apoapsis = apoapsis;
+		return apoapsis;
 	}
 
 	public ArrayList<SubTrabant> getSubTrabants() {
@@ -224,5 +222,19 @@ public abstract class Trabant extends CelestialBody {
 	@Override
 	public double getY() {
 		return (parentStar.getY() + ((relY * oRR * Maths.multAU) / Maths.lightyear));
+	}
+	
+	public void driftCalc() {
+//		if(currDist>maxDist)
+//			maxDist = currDist;
+//		if(currDist<minDist)
+//			minDist = currDist;
+//		if(Math.random()>=0.9)
+//			System.out.printf("CurrDist: %f, startDist: %f, minDist: %f, maxDist: %f\n", currDist, startDist, minDist, maxDist);
+//		if(speedMS>maxSpeed)
+//			maxSpeed = speedMS;
+//		if(speedMS<minSpeed)
+//			minSpeed = speedMS;
+//		System.out.printf("speedMS: %f, startSpeed: %f, minSpeed: %f, maxSpeed: %f\n", speedMS, startSpeed, minSpeed, maxSpeed);
 	}
 }

@@ -14,10 +14,11 @@ public abstract class SubTrabant extends CelestialBody {
 	protected double relXM;					//Relative x to parentStar in m
 	protected double relYM;					//Relative y to parentStar in m
 	protected double temperature; 			//In Kelvin
-	protected double orbitRadius; 			//In EM
+//	protected double orbitRadius; 			//In EM
 	protected double apoapsis;				//In EM
 	protected double periapsis;				//In EM
-	protected double currDist; 				//Current distance from parenTrabant in meter
+	protected double currDist; 				//Current distance from parenTrabant in oRR
+	protected double currDistM;				//Current distance from parenTrabant in meter
 	protected double speed; 				//Frequency of orbits - orbits per day
 	protected double speedMS; 				//Speed in m/s around parentTrabant
 	protected double speedXMS; 				//Speed in x-axis
@@ -49,7 +50,7 @@ public abstract class SubTrabant extends CelestialBody {
 		super(0, 0, size, mass);
 		this.apoapsis = apoapsis;
 		this.periapsis = periapsis;
-		orbitRadius = apoapsis;
+//		orbitRadius = apoapsis;
 		this.parentTrabant = parentTrabant;
 		if(antiClock)
 			orbit = 1;
@@ -71,13 +72,16 @@ public abstract class SubTrabant extends CelestialBody {
 	public void setXY() {
 		x = y = 0;
 		//Determine "start" on elliptical orbit
-		currDist = Math.random() * (apoapsis-periapsis) + periapsis;
-		calculateSpeed();
-		double angle = (Math.random() * 2 * Math.PI);
+//		currDist = Math.random() * (apoapsis-periapsis) + periapsis;
+		currDist = periapsis;
+		currDistM = currDist * oRR;
+//		double angle = (Math.random() * 2 * Math.PI);
+		double angle = Math.PI;
 		relX = currDist * Math.cos(angle);
 		relY = (-1) * currDist * Math.sin(angle);
 		relXM = relX * oRR;
 		relYM = relY * oRR;
+		calculateSpeed();
 		speedXMS = (orbit) * (-1) * speedMS * Math.sin(angle);
 		speedYMS = (orbit) * (-1) * speedMS * Math.cos(angle);
 //		System.out.printf("Angle: %f, currDist: %f, relX: %f, relY: %f, s: %f, sX: %f, sY: %f\n", angle, currDist, relX, relY, speedMS, speedXMS, speedYMS);
@@ -86,57 +90,27 @@ public abstract class SubTrabant extends CelestialBody {
 	}
 
 	public void calculateSpeed() {
+//		TODO Speed calculation seems to be the problem
+		
 		if (parentTrabant == null)
 			return;
-		speedMS = Math.sqrt(Maths.G * parentTrabant.getMass() * ((2/(currDist*oRR))-(1/((apoapsis+periapsis)*oRR/2))));
+//		speedMS = Math.sqrt(Maths.G * (parentTrabant.getMass()+mass) * (2/currDistM - 1/(apoapsis*oRR)));
+		speedMS = Math.sqrt(Maths.G * parentTrabant.getMass() * ((2/(currDistM))-(1/((apoapsis+periapsis)*oRR/2))));
+//		speedMS *= 0.99;
 //		System.out.printf("CurrDist: %f, speedMS: %f\n", currDist, speedMS);
 //		startSpeed = minSpeed = maxSpeed = speedMS;
+		
+//		TODO try decreasing velocity
+		
 	}
 
 	@Override
 	public void update() {
-//		System.out.println(relX + ", " + relY);
-//		currDist = Math.sqrt(relX * relX + relY * relY);
-//		
-//		//Analysis of drift
-//		if(currDist>maxDist)
-//			maxDist = currDist;
-//		if(currDist<minDist)
-//			minDist = currDist;
-//		dayCounter++;
-//		
-//		if(dayCounter>=Maths.ticksPerDay) {
-//			double drift = (maxDist - oldMaxDist);
-//			if(drift<minDrift)
-//				minDrift = drift;
-//			if(drift>maxDrift)
-//				maxDrift = drift;
-//			driftCounter++;
-//			if(driftCounter==1) {
-//				midDrift = 0;
-//				maxDrift = 0;
-//				minDrift = 100;
-//			}
-//			else if(driftCounter==2) {
-//				midDrift = drift;
-//			}
-//			else {
-//				midDrift = ((driftCounter-2) * midDrift + drift)/(driftCounter-1);
-//			}
-//			System.out.printf("CurrDrift: %f, minDrift: %f, maxDrift: %f, midDrift: %f\n", drift, minDrift, maxDrift, midDrift);
-//			oldMaxDist = maxDist;
-//			oldMinDist = minDist;
-//			dayCounter = 0;
-//		}
-		
-//		System.out.printf("CurrDist: %f, startDist: %f, minDist: %f, maxDist: %f\n", currDist, startDist, minDist, maxDist);
-//		if(speedMS>maxSpeed)
-//			maxSpeed = speedMS;
-//		if(speedMS<minSpeed)
-//			minSpeed = speedMS;
-//		System.out.printf("speedMS: %f, startSpeed: %f, minSpeed: %f, maxSpeed: %f\n", speedMS, startSpeed, minSpeed, maxSpeed);
-		
-		double totAcc = Maths.G * parentTrabant.getMass() / (currDist * oRR * currDist * oRR); // Gravitational pull of parentStar
+		driftCalc();
+
+		currDist = Math.sqrt(relX * relX + relY * relY);
+		currDistM = currDist * oRR;
+		double totAcc = Maths.G * parentTrabant.getMass() / (currDistM * currDistM); // Gravitational pull of parentStar
 		double xAcc, yAcc;
 		if (relY == 0 && relX == 0) {
 			System.out.println("Moon collision");
@@ -148,8 +122,13 @@ public abstract class SubTrabant extends CelestialBody {
 			xAcc = 0;
 			yAcc = totAcc;
 		} else {
-			xAcc = Math.sqrt(totAcc * totAcc * relXM * relXM / (relYM * relYM + relXM * relXM));
-			yAcc = Math.sqrt(totAcc * totAcc - (xAcc * xAcc));
+			//Old Way
+//			xAcc = Math.sqrt(totAcc * totAcc * relXM * relXM / (relYM * relYM + relXM * relXM));
+//			yAcc = Math.sqrt(totAcc * totAcc - (xAcc * xAcc));
+			//Simplified way
+			xAcc = -(relX * totAcc/currDist);
+			yAcc = -(relY * totAcc/currDist);
+//			System.out.printf("totAcc: %f, relX: %f, currDist: %f, xAcc: %f\n", totAcc, relX, currDist, xAcc);
 		}
 
 		if (Double.isNaN(xAcc) || Double.isNaN(yAcc)) {
@@ -162,23 +141,24 @@ public abstract class SubTrabant extends CelestialBody {
 				yAcc = 0;
 //			throw new IllegalStateException();
 		}
-		if (relX > 0) {
-			if (relY > 0) {
-				// Bottom right quadrant
-				xAcc = -xAcc;
-				yAcc = -yAcc;
-			} else {
-				// Top right quadrant
-				xAcc = -xAcc;
-			}
-		} else {
-			if (relY > 0) {
-				// Bottom left quadrant
-				yAcc = -yAcc;
-			} else {
-				// Top left quadrant
-			}
-		}
+		//Only used by old way
+//		if (relX > 0) {
+//			if (relY > 0) {
+//				// Bottom right quadrant
+//				xAcc = -Math.abs(xAcc);
+//				yAcc = -Math.abs(yAcc);
+//			} else {
+//				// Top right quadrant
+//				xAcc = -Math.abs(xAcc);
+//			}
+//		} else {
+//			if (relY > 0) {
+//				// Bottom left quadrant
+//				yAcc = -Math.abs(yAcc);
+//			} else {
+//				// Top left quadrant
+//			}
+//		}
 //		System.out.printf("relXM: %f, relYM: %f, currDist: %f, totAcc: %f, xAcc: %f, yAcc: %f, yAcc^2: %f\n", relXM, relYM, currDist, totAcc, xAcc, yAcc, totAcc*totAcc-(xAcc*xAcc));
 //		System.out.printf("speedXMS: %f, speedYMS: %f\n", speedXMS, speedYMS);
 
@@ -237,14 +217,14 @@ public abstract class SubTrabant extends CelestialBody {
 		this.speed = speed;
 		return speed;
 	}
-
+	//Deprecated
 	public double getOrbitRadius() {
-		return orbitRadius;
+		return apoapsis;
 	}
-
-	public double setOrbitRadius(double orbitRadius) {
-		this.orbitRadius = orbitRadius;
-		return orbitRadius;
+	//Deprecated
+	public double setOrbitRadius(double apoapsis) {
+		this.apoapsis = apoapsis;
+		return apoapsis;
 	}
 
 	public double getRelX() {
@@ -279,5 +259,47 @@ public abstract class SubTrabant extends CelestialBody {
 	@Override
 	public double getY() {
 		return (parentTrabant.getY() + ((relY * oRR * Maths.multEM) / Maths.lightyear));
+	}
+	
+	public void driftCalc() {
+//		System.out.println(relX + ", " + relY);
+		
+		//Analysis of drift
+		if(currDist>maxDist)
+			maxDist = currDist;
+		if(currDist<minDist)
+			minDist = currDist;
+		dayCounter++;
+		
+		if(dayCounter>=Maths.ticksPerDay) {
+			double drift = (maxDist - oldMaxDist) * oRR;
+			if(drift<minDrift)
+				minDrift = drift;
+			if(drift>maxDrift)
+				maxDrift = drift;
+			driftCounter++;
+			if(driftCounter==1) {
+				midDrift = 0;
+				maxDrift = 0;
+				minDrift = 1000000000000d;
+			}
+			else if(driftCounter==2) {
+				midDrift = drift;
+			}
+			else {
+				midDrift = ((driftCounter-2) * midDrift + drift)/(driftCounter-1);
+			}
+			System.out.printf("CurrDrift: %f, currDist: %f, minDrift: %f, maxDrift: %f, midDrift: %f\n", drift, currDist, minDrift, maxDrift, midDrift);
+			oldMaxDist = maxDist;
+			oldMinDist = minDist;
+			dayCounter = 0;
+		}
+		
+//		System.out.printf("CurrDist: %f, startDist: %f, minDist: %f, maxDist: %f\n", currDist, startDist, minDist, maxDist);
+//		if(speedMS>maxSpeed)
+//			maxSpeed = speedMS;
+//		if(speedMS<minSpeed)
+//			minSpeed = speedMS;
+//		System.out.printf("speedMS: %f, startSpeed: %f, minSpeed: %f, maxSpeed: %f\n", speedMS, startSpeed, minSpeed, maxSpeed);
 	}
 }

@@ -131,8 +131,11 @@ public class GameDisplay extends JPanel {
 							g.fill((Shape) new Ellipse2D.Double(mX - (int)mSize, mY - (int)mSize, 2 * (int)mSize + 1, 2 * (int)mSize + 1));
 						}
 						else if(mSize > 1.0/2550) {
-							g.setColor(new Color(starColour.getRed(), starColour.getGreen(), starColour.getBlue(), Math.min((int)(mSize * 255) * 10 * 4, 255)));
-							g.drawLine(mX, mY, mX, mY);
+//							g.setColor(new Color(starColour.getRed(), starColour.getGreen(), starColour.getBlue(), Math.min((int)(mSize * 255) * 10 * 4, 255)));
+//							g.drawLine(mX, mY, mX, mY);
+							g.setColor(Color.yellow);
+							g.fill((Shape) new Ellipse2D.Double(mX - 2, mY - 2, 5, 5));
+						
 						}
 					}
 				}

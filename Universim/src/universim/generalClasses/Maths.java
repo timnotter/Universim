@@ -36,6 +36,7 @@ public class Maths {
 	public static final double refMR = refLY * (MR/lightyear);
 	//Amount of updates per in game second - correctness of physics calculations
 	public static final double secondsPerTick = 0.1;
+	public static final double ticksPerSecond = 1 / secondsPerTick;
 	public static final double ticksPerDay = (24 * 60 * 60) / secondsPerTick;
 	
 	//Methods for starAnalysis

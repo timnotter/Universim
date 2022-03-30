@@ -1,6 +1,7 @@
 package universim.generalClasses;
 
 public class Date {
+	private int centiSeconds;
 	private int deciSeconds;
 	private int seconds;
 	private int minutes;
@@ -10,6 +11,7 @@ public class Date {
 	private int year;
 	
 	public Date(int day, int month, int year) {
+		centiSeconds = 0;
 		deciSeconds = 0;
 		seconds = 0;
 		minutes = 0;
@@ -48,16 +50,47 @@ public class Date {
 		return(day + "." + month + "." + year);
 	}
 	
-	public Date nextDeciSecond() {
-		if(deciSeconds==9) {
-			deciSeconds = 0;
-			return nextSecond();
+	public void nextCentiSecond() {
+		if(centiSeconds==9) {
+			centiSeconds = 0;
+			nextDeciSecond();
 		}
-		deciSeconds++;
-		return this;
+		else
+			centiSeconds++;
 	}
 	
-	public Date nextSecond() {
+	public void nextCentiSecond(int times) {
+		for(int i=0;i<times;i++) {
+			if(centiSeconds==9) {
+				centiSeconds = 0;
+				nextDeciSecond();
+			}
+			else
+				centiSeconds++;
+		}
+	}
+	
+	public void nextDeciSecond() {
+		if(deciSeconds==9) {
+			deciSeconds = 0;
+			nextSecond();
+		}
+		else
+			deciSeconds++;
+	}
+	
+	public void nextDeciSecond(int times) {
+		for(int i=0;i<times;i++) {
+			if(deciSeconds==9) {
+				deciSeconds = 0;
+				nextSecond();
+			}
+			else
+				deciSeconds++;
+		}
+	}
+	
+	public void nextSecond() {
 		if(seconds<59) {
 			seconds++;
 		}
@@ -75,12 +108,11 @@ public class Date {
 			seconds = 0;
 			minutes = 0;
 			hours = 0;
-			return nextDay();
+			nextDay();
 		}
-		return this;
 	}
 	
-	public Date nextDay() {
+	public void nextDay() {
 		if(checkDate(day+1, month, year))
 			day++;
 		else if(checkDate(1, month+1, year)) {
@@ -92,8 +124,6 @@ public class Date {
 			month = 1;
 			year++;
 		}
-		
-		return this;
 	}
 	
 	public boolean checkLeapYear() {
